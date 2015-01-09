@@ -52,11 +52,16 @@ module.exports = FileTypeManager =
 		ignore = false
 		if name[0] == "."
 			ignore = true
-		if @IGNORE_EXTENSIONS.indexOf(extension) != -1
+		else if @IGNORE_EXTENSIONS.indexOf(extension) != -1
 			ignore = true
-		if @IGNORE_FILENAMES.indexOf(name) != -1
+		else if @IGNORE_FILENAMES.indexOf(name) != -1
 			ignore = true
-		callback null, ignore
+		return callback null, ignore if ignore
+
+		# Ignore empty files
+		fs.stat path, (error, stat) ->
+			return callback(error) if error?
+			callback null, stat.size <= 0
 
 
 
