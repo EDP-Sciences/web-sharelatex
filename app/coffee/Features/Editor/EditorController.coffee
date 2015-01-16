@@ -105,12 +105,12 @@ module.exports = EditorController =
 				docLines = for line in docLines
 					if line.text?
 						try
-							line.text = unescape(encodeURIComponent(line.text))
+							line.text = decodeURIComponent encodeURIComponent line.text
 						catch err
 							logger.err err:err, project_id:project_id, doc_id:doc_id, fromVersion:fromVersion, line:line, "error encoding line.text uri component"
 					else
 						try
-							line = unescape(encodeURIComponent(line))
+							line = decodeURIComponent encodeURIComponent line
 						catch err
 							logger.err err:err, project_id:project_id, doc_id:doc_id, fromVersion:fromVersion, line:line, "error encoding line uri component"
 					line

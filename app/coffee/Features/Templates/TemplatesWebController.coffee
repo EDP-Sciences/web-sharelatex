@@ -97,6 +97,6 @@ module.exports = TemplatesWebController =
 			url: "#{settings.apis.templates.url}#{path}"
 			json:true
 		request.get opts, (err, response, data)->
-			if response.statusCode == 404
+			if response?.statusCode == 404
 				return callback 404
 			callback err, data
