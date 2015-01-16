@@ -7,26 +7,16 @@ settings = require("settings-sharelatex")
 templates = {}
 
 templates.welcome =	
-	subject:  _.template "Welcome to ShareLaTeX"
+	subject:  _.template "Welcome to EDP Writing Studio"
 	layout: PersonalEmailLayout
 	type:"lifecycle"
 	compiledTemplate: _.template '''
 <p>Hi <%= first_name %>,</p>
 
-<p>Thanks for signing up to ShareLaTeX! If you ever get lost, you can log in again <a href="<%= siteUrl %>/login">here</a>.</p>
-
-<p>If you're new to LaTeX, take a look at our <a href="<%= siteUrl %>/learn">Help Guides</a> and <a href="<%= siteUrl %>/templates">Templates</a>.</p>
-
-<p>
-Regards, <br>
-Henry <br>
-ShareLaTeX Co-founder
-</p>
-
-<p>PS. We love talking to our users about ShareLaTeX. Reply to this email to get in touch us with us directly, whatever the reason. Questions, comments, problems, suggestions, all welcome!<p>
+<p>Thanks for signing up to EDP Writing Studio! If you ever get lost, you can log in again <a href="<%= siteUrl %>/login">here</a>.</p>
 '''
 
-templates.canceledSubscription = 
+templates.canceledSubscription =
 	subject:  _.template "ShareLaTeX thoughts"
 	layout: PersonalEmailLayout
 	type:"lifecycle"
@@ -43,14 +33,14 @@ ShareLaTeX Co-founder
 </p>
 '''
 
-templates.passwordResetRequested =	
-	subject:  _.template "Password Reset - ShareLatex.com"
+templates.passwordResetRequested =
+	subject:  _.template "Password Reset - EDP Writing Studio"
 	layout: NotificationEmailLayout
 	type:"notification"
 	compiledTemplate: _.template '''
 <h1 class="h1">Password Reset</h1>
 <p>
-We got a request to reset your ShareLaTeX password.
+We got a request to reset your EDP Writing Studio password.
 <p>
 <center>
 	<div style="width:200px;background-color:#a93629;border:1px solid #e24b3b;border-radius:3px;padding:15px; margin:12.5px;">
@@ -70,7 +60,7 @@ If you didn't request a password reset, let us know.
 
 </p>
 <p>Thank you</p>
-<p> <a href="<%= siteUrl %>"> ShareLatex.com </a></p>
+<p> <a href="<%= siteUrl %>"> EDP Writing Studio </a></p>
 '''
 
 templates.projectSharedWithYou = 
@@ -92,7 +82,7 @@ templates.projectSharedWithYou =
 	</div>
 </center>
 <p> Thank you</p>
-<p> <a href="<%= siteUrl %>"> ShareLatex.com </a></p>
+<p> <a href="<%= siteUrl %>"> EDP Writing Studio </a></p>
 
 '''
 
