@@ -4,7 +4,7 @@
   "description": "The HTTP front end for ShareLaTeX",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sharelatex/web-sharelatex.git"
+    "url": "https://github.com/EDP-Sciences/web-sharelatex.git"
   },
   "directories": {
     "public": "./public"
@@ -38,7 +38,7 @@
     "session.socket.io": "0.1.4",
     "settings-sharelatex": "git+https://github.com/sharelatex/settings-sharelatex.git#v1.0.0",
     "socket.io": "0.9.16",
-    "translations-sharelatex": "git+https://github.com/sharelatex/translations-sharelatex.git#master",
+    "translations-sharelatex": "git+https://github.com/EDP-Sciences/translations-sharelatex.git#master",
     "underscore": "1.6.0",
     "xml2js": "0.2.0"
   },

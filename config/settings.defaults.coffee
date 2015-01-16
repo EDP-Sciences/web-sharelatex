@@ -266,11 +266,13 @@ module.exports =
 	nav:
 		left_footer: [{
 			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2014"
+		}, {
+			text: "Modified by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2014-2015"
 		}]
 
 		right_footer: [{
 			text: "<i class='fa fa-github-square'></i> Contribute on Github"
-			url: "https://github.com/sharelatex/sharelatex"
+			url: "https://github.com/EDP-Sciences/sharelatex"
 		}]
 
 		header: [{

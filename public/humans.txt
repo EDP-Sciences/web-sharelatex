@@ -1,12 +1,10 @@
 /* HUMANS */
-Name: Henry Oswald
-Twitter: @henryoswald
-Location: London UK
-www.henryoswald.me
+Name: Xavier Trochu
+Location: Les Ulis, France
 
-Name: James Allen
-Location: UK
+Name: Jean-Paul Jorda
+Location: Les Ulis, France
 
 /* SITE */
 technologies
-node.js coffeescirpt, express, mongodb, websockets, jquery, requirejs, ace editor, mongoosejs
+node.js, coffeescript, express, mongodb, websockets, jquery, requirejs, ace editor, mongoosejs, angularjs
