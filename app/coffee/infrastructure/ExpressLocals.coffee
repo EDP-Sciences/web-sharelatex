@@ -91,7 +91,7 @@ module.exports = (app)->
 			return tagLines[Math.floor(Math.random()*tagLines.length)]
 		res.locals.getRedirAsQueryString = ->
 			if req.query.redir?
-				return "?#{querystring.stringify({redir:req.query.redir})}"
+				return "?#{querystring.stringify(redir: req.query.redir)}"
 			return ""
 		next()
 
@@ -128,12 +128,6 @@ module.exports = (app)->
 		res.locals.tenderUrl     = Settings.tenderUrl
 		res.locals.sentrySrc     = Settings.sentry?.src
 		res.locals.sentryPublicDSN = Settings.sentry?.publicDSN
-		next()
-
-	app.use (req, res, next) ->
-		if req.query? and req.query.scribtex_path?
-			res.locals.lookingForScribtex = true
-			res.locals.scribtexPath = req.query.scribtex_path
 		next()
 
 	app.use (req, res, next) ->
