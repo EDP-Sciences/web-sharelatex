@@ -34,6 +34,7 @@ BlogController = require("./Features/Blog/BlogController")
 WikiController = require("./Features/Wiki/WikiController")
 Modules = require "./infrastructure/Modules"
 RateLimiterMiddlewear = require('./Features/Security/RateLimiterMiddlewear')
+ObjectDisplayRouter = require "./Features/ObjectDisplay/ObjectDisplayRouter"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -62,6 +63,9 @@ module.exports = class Router
 		UploadsRouter.apply(app)
 		PasswordResetRouter.apply(app)
 		StaticPagesRouter.apply(app)
+		TemplatesRouter.apply(app)
+		DropboxRouter.apply(app)
+		ObjectDisplayRouter.apply app
 		
 		Modules.applyRouter(app)
 

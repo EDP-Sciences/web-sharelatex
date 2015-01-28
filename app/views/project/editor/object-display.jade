@@ -1,0 +1,18 @@
+script(type='text/ng-template', id='cdsObjectDisplayTemplate')
+    .cdsDisplayObjectOverlay(
+        class="dropdown"
+        ng-controller="ObjectDisplayController"
+        ng-style="{'left': left, 'top': top, 'bottom': bottom, 'right': right}"
+        ng-class="{'open': open}"
+        ng-show="object_data || error || pending"
+    )
+        .error(ng-show="error").
+            There was an error finding the given object ({{ error.status }})
+
+        .pending(ng-show="pending").
+            Searching object...
+
+        .content(ng-show="object_data")
+            span.name {{ object_data.name }}
+            span.attribute(ng-repeat="(key, value) in object_data", ng-class="key" ng-if="key != 'name'").
+                Found in {{ key }}: {{ value }}
