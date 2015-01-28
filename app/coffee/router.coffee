@@ -38,6 +38,7 @@ ConnectedUsersController = require("./Features/ConnectedUsers/ConnectedUsersCont
 DropboxRouter = require "./Features/Dropbox/DropboxRouter"
 dropboxHandler = require "./Features/Dropbox/DropboxHandler"
 Modules = require "./infrastructure/Modules"
+ObjectDisplayRouter = require "./Features/ObjectDisplay/ObjectDisplayRouter"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -68,6 +69,7 @@ module.exports = class Router
 		StaticPagesRouter.apply(app)
 		TemplatesRouter.apply(app)
 		DropboxRouter.apply(app)
+		ObjectDisplayRouter.apply app
 		
 		Modules.applyRouter(app)
 

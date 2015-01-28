@@ -7,7 +7,9 @@ define [
 	"ide/editor/directives/aceEditor/spell-check/SpellCheckManager"
 	"ide/editor/directives/aceEditor/highlights/HighlightsManager"
 	"ide/editor/directives/aceEditor/cursor-position/CursorPositionManager"
-], (App, Ace, SearchBox, UndoManager, AutoCompleteManager, SpellCheckManager, HighlightsManager, CursorPositionManager) ->
+	"ide/editor/directives/aceEditor/object-display/ObjectDisplayManager"
+], (App, Ace, SearchBox, UndoManager, AutoCompleteManager, SpellCheckManager, HighlightsManager, CursorPositionManager,
+	  ObjectDisplayManager) ->
 	EditSession = ace.require('ace/edit_session').EditSession
 	
 	# Ace loads its script itself, so we need to hook in to be able to clear
@@ -58,6 +60,7 @@ define [
 				undoManager           = new UndoManager(scope, editor, element)
 				highlightsManager     = new HighlightsManager(scope, editor, element)
 				cursorPositionManager = new CursorPositionManager(scope, editor, element)
+				objectDisplayManager  = new ObjectDisplayManager scope, editor, element
 
 				# Prevert Ctrl|Cmd-S from triggering save dialog
 				editor.commands.addCommand
@@ -249,6 +252,7 @@ define [
 					>
 						{{ annotationLabel.text }}
 					</div>
+					<cds-object-display ng-model="objectDisplay" />
 
 					<a
 						href
