@@ -21,8 +21,8 @@ UserSchema = new Schema
 	holdingAccount    : {type : Boolean, default: false}
 	ace               : {
 							mode        :   {type : String, default: 'none'}
-							theme       :   {type : String, default: 'textmate'}
-							fontSize    :   {type : Number, default:'12'}
+							theme       :   {type : String, default: 'katzenmilch'}
+							fontSize    :   {type : Number, default:'16'}
 							autoComplete:   {type : Boolean, default: true}
 							spellCheckLanguage :   {type : String, default: "en"}
 							pdfViewer   :   {type : String, default: "pdfjs"}

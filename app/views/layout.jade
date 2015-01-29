@@ -12,7 +12,7 @@ html(itemscope, itemtype='http://schema.org/Product')
 		-else
 			title= translate(title) + ' - Writing Studio, '+translate("online_latex_editor")
 
-		link(rel="icon", href="/favicon.ico")
+		link(rel="icon", href="/img/favicon.png")
 		link(rel='stylesheet', href='/stylesheets/style.css?fingerprint='+fingerprint('/stylesheets/style.css'))
 		link(href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css",rel="stylesheet")
 
@@ -27,7 +27,7 @@ html(itemscope, itemtype='http://schema.org/Product')
 		-else
 			meta(itemprop="description", content=meta)
 		
-		meta(itemprop="image", content="https://writingstudio.edpsciences.org/favicon.ico")
+		meta(itemprop="image", content="https://writingstudio.edpsciences.org/img/favicon.png")
 
 		- if (typeof(gaToken) != "undefined")
 			script(type='text/javascript').
