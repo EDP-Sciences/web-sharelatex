@@ -164,6 +164,7 @@ define [
 					editor.setReadOnly !!value
 
 				editor.setOption("scrollPastEnd", true)
+				$(editor.renderer.container).css 'font-family', "'Inconsolata' 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace"
 
 				resetSession = () ->
 					session = editor.getSession()

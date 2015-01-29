@@ -22,7 +22,7 @@ UserSchema = new Schema
 	ace               : {
 							mode        :   {type : String, default: 'none'}
 							theme       :   {type : String, default: 'katzenmilch'}
-							fontSize    :   {type : Number, default:'12'}
+							fontSize    :   {type : Number, default:'16'}
 							autoComplete:   {type : Boolean, default: true}
 							spellCheckLanguage :   {type : String, default: "en"}
 							pdfViewer   :   {type : String, default: "pdfjs"}
