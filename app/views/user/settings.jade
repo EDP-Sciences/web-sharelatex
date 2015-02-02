@@ -96,11 +96,38 @@ block content
 													ng-disabled="changePasswordForm.$invalid"
 												) #{translate("change")}
 
+							if user.orcid
+								hr
+								h3 #{translate("orcid_information")}
+								.form-group
+									label(for='orcid') #{translate("your_orcid")}
+									input.form-control(name='orcid', placeholder='0000-0000-0000-0000', readonly, value=user.orcid)
+							hr
+
+							h3 #{translate("dropbox_integration")}
+								span.small
+									a(href='/help/kb/dropbox-2') (#{translate("learn_more")})
+							- if(!user.features.dropbox)
+								p.small #{translate("dropbox_sync_description")}
+								.alert.alert-info
+									p #{translate("dropbox_is_premium")}
+									p
+										a.btn.btn-info(href='/user/subscription/plans') #{translate("upgrade")}
+							- else if(userIsRegisteredWithDropbox)
+								.alert.alert-success
+									| #{translate("account_is_linked")}.
+									|
+									a(href='/dropbox/unlink') #{translate("unlink_dropbox")}
+							- else
+								p.small #{translate("dropbox_sync_description")}
+								p
+									a.btn.btn-info(href='/dropbox/beginAuth') #{translate("link_to_dropbox")}
+
 							| !{moduleIncludes("userSettings", locals)}
 
 							hr
 
-							p #{translate("need_to_leave")} 
+							p #{translate("need_to_leave")}
 								a(href, ng-click="deleteAccount()")  #{translate("delete_your_account")}
 
 
@@ -127,4 +154,3 @@ block content
 			)
 				span(ng-hide="state.inflight") #{translate("delete")}
 				span(ng-show="state.inflight") #{translate("deleting")}...
-

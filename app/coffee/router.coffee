@@ -34,6 +34,7 @@ BlogController = require("./Features/Blog/BlogController")
 WikiController = require("./Features/Wiki/WikiController")
 Modules = require "./infrastructure/Modules"
 RateLimiterMiddlewear = require('./Features/Security/RateLimiterMiddlewear')
+OrcidController = require "./Features/Authentication/OrcidController"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -47,14 +48,17 @@ httpAuth = require('express').basicAuth (user, pass)->
 module.exports = class Router
 	constructor: (app)->
 		app.use(app.router)
-		
-		app.get  '/login', UserPagesController.loginPage
+
+		app.get  '/login', OrcidController.setLoginUrl, UserPagesController.loginPage
 		app.post '/login', AuthenticationController.login
 		app.get  '/logout', UserController.logout
 		app.get  '/restricted', SecurityManager.restricted
 
-		app.get  '/register', UserPagesController.registerPage
-		app.post '/register', UserController.register
+		OrcidController.apply app
+
+		if not Settings.orcid?.disableRegistration?
+			app.get  '/register', UserPagesController.registerPage
+			app.post '/register', UserController.register
 
 		EditorRouter.apply(app, httpAuth)
 		CollaboratorsRouter.apply(app)
@@ -62,7 +66,7 @@ module.exports = class Router
 		UploadsRouter.apply(app)
 		PasswordResetRouter.apply(app)
 		StaticPagesRouter.apply(app)
-		
+
 		Modules.applyRouter(app)
 
 		app.get '/blog', BlogController.getIndexPage
@@ -139,7 +143,7 @@ module.exports = class Router
 		app.del  '/user/:user_id/update/*', httpAuth, TpdsController.deleteUpdate
 		app.ignoreCsrf('post', '/user/:user_id/update/*')
 		app.ignoreCsrf('delete', '/user/:user_id/update/*')
-		
+
 		app.post '/project/:project_id/contents/*', httpAuth, TpdsController.updateProjectContents
 		app.del  '/project/:project_id/contents/*', httpAuth, TpdsController.deleteProjectContents
 		app.ignoreCsrf('post', '/project/:project_id/contents/*')
@@ -150,7 +154,7 @@ module.exports = class Router
 
 		app.get  "/project/:Project_id/messages", SecurityManager.requestCanAccessProject, ChatController.getMessages
 		app.post "/project/:Project_id/messages", SecurityManager.requestCanAccessProject, ChatController.sendMessage
-		
+
 		app.get  /learn(\/.*)?/, WikiController.getPage
 
 		#Admin Stuff
