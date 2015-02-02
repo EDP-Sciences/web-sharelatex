@@ -1,0 +1,12 @@
+//
+   Created by xtrochu on 02/02/15.
+
+extends ../layout
+block content
+    .content
+        .container
+            .row
+                .col-md-8.col-md-offset-2.text-center
+                    .page-header
+                        h2 #{translate("orcid_error")}
+                    p #{error_description}

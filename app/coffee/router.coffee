@@ -38,6 +38,7 @@ ConnectedUsersController = require("./Features/ConnectedUsers/ConnectedUsersCont
 DropboxRouter = require "./Features/Dropbox/DropboxRouter"
 dropboxHandler = require "./Features/Dropbox/DropboxHandler"
 Modules = require "./infrastructure/Modules"
+OrcidController = require "./Features/Authentication/OrcidController"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -51,14 +52,17 @@ httpAuth = require('express').basicAuth (user, pass)->
 module.exports = class Router
 	constructor: (app, io, socketSessions)->
 		app.use(app.router)
-		
-		app.get  '/login', UserPagesController.loginPage
+
+		app.get  '/login', OrcidController.setLoginUrl, UserPagesController.loginPage
 		app.post '/login', AuthenticationController.login
 		app.get  '/logout', UserController.logout
 		app.get  '/restricted', SecurityManager.restricted
 
-		app.get  '/register', UserPagesController.registerPage
-		app.post '/register', UserController.register
+		OrcidController.apply app
+
+		if not Settings.orcid?.disableRegistration?
+			app.get  '/register', UserPagesController.registerPage
+			app.post '/register', UserController.register
 
 		EditorRouter.apply(app, httpAuth)
 		CollaboratorsRouter.apply(app)

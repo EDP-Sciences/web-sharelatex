@@ -1,0 +1,58 @@
+.page-header.orcid(style="margin-top: 25px")
+    h1 #{translate("log_in_orcid")}
+
+style(type="text/css").
+    .page-header.orcid {
+        margin-top: 2em;
+        border-top: 1px solid #333;
+    }
+    #connect-orcid-button {
+        border: 1px solid #D3D3D3;
+        padding: .3em;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 1px 1px 3px #999;
+        cursor: pointer;
+        color: #999;
+        font-weight: bold;
+        font-size: .8em;
+        line-height: 24px;
+        vertical-align: middle;
+    }
+
+    #connect-orcid-button:hover {
+        border: 1px solid #338caf;
+        color: #338caf;
+    }
+
+    #orcid-id-logo {
+        display: block;
+        margin: 0 .5em 0 0;
+        padding: 0;
+        float: left;
+    }
+    #orcid-description {
+        margin-top: 1.2em;
+        padding: .8em;
+        font-size: smaller;
+        background-color: #e8e8e8;
+        color: #666;
+    }
+    #orcid-container {
+        width: 100%;
+        text-align: center;
+    }
+
+
+script(type="text/javascript").
+    var oauthWindow;
+    function openORCID() {
+        oauthWindow = window.open("!{orcidLoginUrl}", "_blank", "toolbar=no, scrollbars=yes, width=500, height=600, top=500, left=500");
+    }
+
+#orcid-container
+    button#connect-orcid-button(onclick="openORCID()")
+        img#orcid-id-logo(src="http://orcid.org/sites/default/files/images/orcid_24x24.png", width="24px", height="24px", alt="ORCID logo")
+        | Create or Connect your ORCID iD
+
+p#orcid-description !{translate("orcid_description")}
