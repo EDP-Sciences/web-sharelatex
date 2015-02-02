@@ -8,6 +8,31 @@ logger = require("logger-sharelatex")
 module.exports = RecurlyWrapper =
 	apiUrl : "https://api.recurly.com/v2"
 
+	createSubscription: (user, subscriptionDetails, recurly_token_id, callback)->
+		requestBody = """
+		          <subscription>
+		            <plan_code>#{subscriptionDetails.plan_code}</plan_code>
+		            <currency>#{subscriptionDetails.currencyCode}</currency>
+		            <account>
+		            	<account_code>#{user._id}</account_code>
+		            	<email>#{user.email}</email>
+		            	<first_name>#{user.first_name}</first_name>
+		            	<last_name>#{user.last_name}</last_name>
+		            	<billing_info>
+		            		<token_id>#{recurly_token_id}</token_id>
+		            	</billing_info>
+		            </account>
+		          </subscription>
+		          """
+		@apiRequest({
+			url    : "subscriptions"
+			method : "POST"
+			body   : requestBody
+		}, (error, response, responseBody) =>
+			return callback(error) if error?
+			@_parseSubscriptionXml responseBody, callback
+		)		
+
 	apiRequest : (options, callback) ->
 		options.url = @apiUrl + "/" + options.url
 		options.headers =
@@ -16,7 +41,7 @@ module.exports = RecurlyWrapper =
 			"Content-Type"  : "application/xml; charset=utf-8"
 		request options, (error, response, body) ->
 			unless error? or response.statusCode == 200 or response.statusCode == 201 or response.statusCode == 204
-				logger.err err:error, options:options, "error returned from recurly"
+				logger.err err:error, body:body, options:options, statusCode:response?.statusCode, "error returned from recurly"
 				error = "Recurly API returned with status code: #{response.statusCode}"
 			callback(error, response, body)
 
@@ -49,6 +74,16 @@ module.exports = RecurlyWrapper =
 
 			callback null, signature
 	
+
+	getSubscriptions: (accountId, callback)->
+		@apiRequest({
+			url: "accounts/#{accountId}/subscriptions"
+		}, (error, response, body) =>
+			return callback(error) if error?
+			@_parseXml body, callback
+		)
+
+
 	getSubscription: (subscriptionId, options, callback) ->
 		callback = options unless callback?
 		options ||= {}
@@ -79,6 +114,16 @@ module.exports = RecurlyWrapper =
 					callback null, recurlySubscription
 		)
 
+	getAccounts: (callback)->
+		@apiRequest({
+			url: "accounts"
+			qs:
+				per_page:2000
+		}, (error, response, body) =>
+			return callback(error) if error?
+			@_parseXml body, callback
+		)
+
 	getAccount: (accountId, callback) ->
 		@apiRequest({
 			url: "accounts/#{accountId}"
@@ -86,7 +131,16 @@ module.exports = RecurlyWrapper =
 			return callback(error) if error?
 			@_parseAccountXml body, callback
 		)
-	
+
+	getBillingInfo: (accountId, callback)->
+		@apiRequest({
+			url: "accounts/#{accountId}/billing_info"
+		}, (error, response, body) =>
+			return callback(error) if error?
+			@_parseXml body, callback
+		)
+
+
 	updateSubscription: (subscriptionId, options, callback) ->
 		logger.log subscriptionId:subscriptionId, options:options, "telling recurly to update subscription"
 		requestBody = """
@@ -102,6 +156,37 @@ module.exports = RecurlyWrapper =
 		}, (error, response, responseBody) =>
 			return callback(error) if error?
 			@_parseSubscriptionXml responseBody, callback
+		)
+
+	createFixedAmmountCoupon: (coupon_code, name, currencyCode, discount_in_cents, callback)->
+		requestBody = """
+			<coupon>
+				<coupon_code>#{coupon_code}</coupon_code>
+				<name>#{name}</name>
+				<discount_type>dollars</discount_type>
+				<discount_in_cents>
+					<#{currencyCode}>#{discount_in_cents}</#{currencyCode}>
+				</discount_in_cents>
+			</coupon>
+		"""
+		logger.log coupon_code:coupon_code, requestBody:requestBody, "creating coupon"
+		@apiRequest({
+			url    : "coupons"
+			method : "post"
+			body   : requestBody
+		}, (error, response, responseBody) =>
+			if error?
+				logger.err err:error, coupon_code:coupon_code, "error creating coupon"
+			callback(error)
+		)
+
+
+	lookupCoupon: (coupon_code, callback)->
+		@apiRequest({
+			url: "coupons/#{coupon_code}"
+		}, (error, response, body) =>
+			return callback(error) if error?
+			@_parseXml body, callback
 		)
 
 	cancelSubscription: (subscriptionId, callback) ->
