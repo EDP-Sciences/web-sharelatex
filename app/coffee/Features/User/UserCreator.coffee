@@ -13,10 +13,12 @@ module.exports =
 
 	createNewUser: (opts, callback)->
 		user = new User()
-		user.email = opts.email
-		user.holdingAccount = opts.holdingAccount
+		user.email = opts.email if opts.email?
+		user.orcid = opts.orcid if opts.orcid?
+		user.holdingAccount = opts.holdingAccount if opts.holdingAccount?
 
-		username = opts.email.match(/^[^@]*/)
+
+		username = opts.email.match(/^[^@]*/) if opts.email?
 		if username?
 			user.first_name = username[0]
 		else

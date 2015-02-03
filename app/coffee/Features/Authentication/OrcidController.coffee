@@ -10,6 +10,7 @@ https = require "https"
 http = require "http"
 Settings = require "settings-sharelatex"
 xml2js = require "xml2js"
+isArray = require "isarray"
 
 auto_request = (options) ->
   if options.protocol == 'http:'
@@ -28,6 +29,20 @@ find_node_content = (root, nodes, callback) ->
     for subnode in subnodes
       find_node_content subnode, snodes, callback
 
+def find_email = (emails) ->
+  if not isArray emails
+    emails = [emails]
+  first_email = null
+  primary_email = null
+  current_email = null
+  valid_email = null
+  for entry in emails
+    primary_email = entry.value if entry.primary
+    valid_email = entry.value if entry.verified
+    current_email = entry.value if entry.current
+    first_email = entry.value if not first_email?
+  return primary_email or valid_email or current_email or first_email
+
 module.exports = OrcidController =
   init: () ->
     OrcidController.endpoint_url = Settings.orcid?.endpoint_url or "http://pub.sandbox.orcid.org/v1.1/"
@@ -44,11 +59,11 @@ module.exports = OrcidController =
       app.get  '/ews/orcid_endpoint', OrcidController.endpoint
 
 
-  getUserByOrcid: (orcid, callback = (error, user, isNew) ->) ->
+  getUserByOrcid: (orcid, callback = (error, user=null, isNew=false) ->) ->
     UserGetter.getUser {orcid: orcid}, (error, user) ->
       return (callback error) if error?
       return (callback null, user) if user?
-      UserCreator.createNewUser orcid: orcid, (error, user) ->
+      UserCreator.createNewUser {orcid: orcid, holdingAccount: true}, (error, user) ->
         return (callback error) if error?
         callback null, user, true
 
@@ -79,8 +94,8 @@ module.exports = OrcidController =
         result = JSON.parse data.toString()
 
         first_name = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["given-names"].value
-        last_name  = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["given-names"].value
-        email = result?["orcid-profile"]?["orcid-bio"]?["contact-details"]?["email"].value  # FIXME: check primary
+        last_name  = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["family-name"].value
+        email = find_email result?["orcid-profile"]?["orcid-bio"]?["contact-details"]?["email"]
 
         update = {}
         update.first_name = first_name if first_name?
