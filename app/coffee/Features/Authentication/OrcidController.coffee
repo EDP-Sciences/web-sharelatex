@@ -159,7 +159,6 @@ module.exports = OrcidController =
         OrcidController.getUserByOrcid orcid, (error, user, isNew) ->
           return(next error) if error?
           logger.info 'get_user', user, isNew
-
           OrcidController.updateUserCredentials user, refresh_token, access_token, (error) ->
             if error
               AuthenticationController._recordFailedLogin (error) ->
