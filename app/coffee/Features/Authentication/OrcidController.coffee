@@ -7,8 +7,16 @@ logger = require "logger-sharelatex"
 querystring = require "querystring"
 Url = require "url"
 https = require "https"
+http = require "http"
 Settings = require "settings-sharelatex"
 xml2js = require "xml2js"
+
+auto_request = (options) ->
+  if options.protocol == 'http:'
+    return http.request options
+  if options.protocol == 'https:'
+    return https.request options
+  throw 'Invalid protocol'
 
 find_node_content = (root, nodes, callback) ->
   return (callback null, root) if not nodes
@@ -22,14 +30,13 @@ find_node_content = (root, nodes, callback) ->
 
 module.exports = OrcidController =
   init: () ->
-    OrcidController.endpoint_url = Settings.orcid?.endpoint_url or "https://sandbox.orcid.org/"
+    OrcidController.endpoint_url = Settings.orcid?.endpoint_url or "http://pub.sandbox.orcid.org/v1.1/"
     OrcidController.authorize_url = Settings.orcid?.authorize_url or "https://sandbox.orcid.org/oauth/authorize"
     OrcidController.token_url = Settings.orcid?.token_url or "https://pub.sandbox.orcid.org/oauth/token"
     OrcidController.scope = Settings.orcid?.scope or "/authenticate"
     OrcidController.client_id = Settings.orcid?.client_id
     OrcidController.client_secret = Settings.orcid?.client_secret
-    # OrcidController.redirect_uri = "#{Settings.siteUrl}/ews/orcid_endpoint"
-    OrcidController.redirect_uri = "http://lithium.edpsciences.net:3000/ews/orcid_endpoint"
+    OrcidController.redirect_uri = "#{Settings.siteUrl}/ews/orcid_endpoint"
 
   apply: (app) ->
     if Settings.orcid?.useOrcidLogin?
@@ -46,7 +53,7 @@ module.exports = OrcidController =
         callback null, user, true
 
   updateUserCredentials: (user, refresh_token, access_token, callback = (error) ->) ->
-    UserUpdater.updaterUser user.id.toString(),
+    UserUpdater.updateUser user._id.toString(),
       $set:
         orcid_refresh_token: refresh_token,
         orcid_access_token: access_token
@@ -54,39 +61,43 @@ module.exports = OrcidController =
       callback error
 
   updateUserInfoFromOrcid: (user, callback = (error) ->) ->
-    https.get "#{@endpoint_url}#{user.orcid}/orcid-bio", (error, response) ->
-      return (callback error) if error?
-      parser = new xml2js.Parser()
+    options = Url.parse "#{OrcidController.endpoint_url}#{user.orcid}/orcid-bio"
+    options.headers =
+        authorization: "Bearer #{user.orcid_access_token}"
+        accept: "application/json"
+    options.method = 'GET'
+    logger.info "orcid-get", options
+    req = auto_request options
+    req.end()
 
-      parser.parseString response, (error, body) ->
+    req.on 'response', (response) ->
+      logger.info 'orcid-bio', response.statusCode
+      return (callback response.statusCode) if response.statusCode >= 400
+
+      response.on 'data', (data) ->
+        logger.info 'orcid-bio data', data.toString()
+        result = JSON.parse data.toString()
+
+        first_name = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["given-names"].value
+        last_name  = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["given-names"].value
+        email = result?["orcid-profile"]?["orcid-bio"]?["contact-details"]?["email"].value  # FIXME: check primary
+
+        update = {}
+        update.first_name = first_name if first_name?
+        update.last_name = last_name if last_name?
+        update.email = email if email?
+
+        logger.info 'orcid-bio data', update
+
+        UserUpdater.updateUser user._id.toString(),
+          $set:
+            update
+        , (error) ->
           return (callback error) if error?
-          data =
-            errors: []
-          find_node_content body, ['orcid-profile', 'orcid-bio', 'personal-details'], (error, node) ->
-            data.errors.push error if error?
-            if node
-              find_node_content node, ['given-name'], (error, node) ->
-                data.errors.push error if error?
-                data.first_name = node._ if node?
-              find_node_content node, ['family-name'], (error, node) ->
-                data.errors.push error if error?
-                data.last_name = node._ if node?
-          find_node_content body, ['orcid-profile', 'orcid-bio', 'contact-details', 'email'], (error, node) ->
-            data.errors.push error if error?
-            if node and node?.$.primary?
-              data.email = node._
-          return (callback data.errors) if data.errors.length > 0
-          UserUpdater.updaterUser user.id.toString(),
-            $set:
-              first_name: data.first_name,
-              last_name: data.last_name,
-              email: data.email,
-          , (error) ->
-            return (callback error) if error?
-            user.first_name = first_name
-            user.last_name = last_name
-            user.email = email
-            callback()
+          user.first_name = first_name if first_name?
+          user.last_name = last_name if last_name?
+          user.email = email if email?
+          callback()
 
   setLoginUrl: (req, res, next) ->
     useOrcidLogin = res.locals.displayOrcidLogin = Settings?.orcid.useOrcidLogin
@@ -124,16 +135,18 @@ module.exports = OrcidController =
 
     logger.info 'request', options, body
 
-    orcid_req = https.request options
+    orcid_req = auto_request options
 
-    orcid_req.write body
+    orcid_req.end body
 
     orcid_req.on 'response', (response) ->
       logger.info 'response', response.statusCode, response.headers
+      if response.statusCode >= 400
+        return (next response.statusCode) if response.statusCode >= 300
 
       response.on "data", (body) ->
         logger.info 'data', body.toString()
-        return(next response.statusCode) if response.statusCode >= 300
+        return (next response.statusCode) if response.statusCode >= 300
         result = JSON.parse body.toString()
         if result?.token_type != "bearer"
           return next "Invalid token_type"
@@ -145,16 +158,20 @@ module.exports = OrcidController =
 
         OrcidController.getUserByOrcid orcid, (error, user, isNew) ->
           return(next error) if error?
+          logger.info 'get_user', user, isNew
           OrcidController.updateUserCredentials user, refresh_token, access_token, (error) ->
             if error
               AuthenticationController._recordFailedLogin (error) ->
               return next error
+            user.orcid_refresh_token = refresh_token
+            user.orcid_access_token = access_token
             OrcidController.updateUserInfoFromOrcid user, (error) ->
               if error
                 AuthenticationController._recordFailedLogin (error) ->
                 return next error
-              AuthenticationController._recordSuccessfullLogin user.id, (error) ->
+              AuthenticationController._recordSuccessfulLogin user._id, (error) ->
                 return(next error) if error?
               AuthenticationController._establishUserSession req, user, (error) ->
                 return(next error) if error?
-              next()
+                logger.log email: email, user_id: user._id.toString(), "successful ORCID log in"
+                res.redirect '/projects'
