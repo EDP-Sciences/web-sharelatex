@@ -29,7 +29,7 @@ find_node_content = (root, nodes, callback) ->
     for subnode in subnodes
       find_node_content subnode, snodes, callback
 
-def find_email = (emails) ->
+find_email = (emails) ->
   if not isArray emails
     emails = [emails]
   first_email = null
@@ -188,5 +188,5 @@ module.exports = OrcidController =
                 return(next error) if error?
               AuthenticationController._establishUserSession req, user, (error) ->
                 return(next error) if error?
-                logger.log email: email, user_id: user._id.toString(), "successful ORCID log in"
-                res.redirect '/projects'
+                logger.log user.orcid, user.email, user_id: user._id.toString(), "successful ORCID log in"
+                res.render 'orcid/popup_close', redirect: "#{Settings.siteUrl}/project"
