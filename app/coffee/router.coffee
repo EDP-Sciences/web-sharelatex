@@ -60,8 +60,8 @@ module.exports = class Router
 
 		OrcidController.apply app
 
+		app.get  '/register', UserPagesController.registerPage
 		if not Settings.orcid?.disableRegistration?
-			app.get  '/register', UserPagesController.registerPage
 			app.post '/register', UserController.register
 
 		EditorRouter.apply(app, httpAuth)
