@@ -12,23 +12,9 @@ module.exports =
 		re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\ ".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA -Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 		return re.test(email)
 
-	hasZeroLengths : (props) ->
-		hasZeroLength = false
-		props.forEach (prop) ->
-			if prop.length == 0
-				hasZeroLength = true
-		return hasZeroLength
-
-	_registrationRequestIsValid : (body, callback)->
+	_registrationRequestIsValid : (body)->
 		email = sanitize.escape(body.email).trim().toLowerCase()
-		password = body.password
-		username = email.match(/^[^@]*/)
-		if @hasZeroLengths([password, email])
-			return false
-		else if !@validateEmail(email)
-			return false
-		else
-			return true
+		body.password.length > 0 and email.length > 0 and @validateEmail email
 
 	_createNewUserIfRequired: (user, userDetails, callback)->
 		if !user?
