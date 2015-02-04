@@ -63,7 +63,7 @@ module.exports = OrcidController =
     UserGetter.getUser {orcid: orcid}, (error, user) ->
       return (callback error) if error?
       return (callback null, user) if user?
-      UserCreator.createNewUser {orcid: orcid, holdingAccount: true}, (error, user) ->
+      UserCreator.createNewUser {orcid: orcid, holdingAccount: false}, (error, user) ->
         return (callback error) if error?
         callback null, user, true
 

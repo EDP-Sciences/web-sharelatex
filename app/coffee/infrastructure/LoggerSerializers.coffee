@@ -5,6 +5,7 @@ module.exports =
 		return {
 			id: user._id
 			email: user.email
+			orcid: user.orcid
 			first_name: user.name
 			last_name: user.name
 		}

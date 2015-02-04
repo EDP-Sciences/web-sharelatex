@@ -6,6 +6,9 @@ fs = require('fs')
 module.exports =
 
 	registerPage : (req, res)->
+		if Settings.orcid?.disableRegistration?
+			return res.render 'orcid/no_register'
+
 		sharedProjectData =
 			project_name:req.query.project_name
 			user_first_name:req.query.user_first_name
