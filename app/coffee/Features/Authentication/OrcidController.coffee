@@ -30,6 +30,7 @@ find_node_content = (root, nodes, callback) ->
       find_node_content subnode, snodes, callback
 
 find_email = (emails) ->
+  return null if !emails?
   if not isArray emails
     emails = [emails]
   first_email = null
