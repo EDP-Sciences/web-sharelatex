@@ -369,14 +369,22 @@
   border-color: @navbar-default-border;
   padding: 1rem 2rem;
 
-  .navbar-brand {
-    background-image: url('/img/logo.png');
-    background-size: 269px 65px;
-    background-repeat: no-repeat;
-    height: 65px;
-    margin-top: 10px;
+  .navbar-brand a {
+    display: inline-block;
     padding: 0;
-    width: 269px;
+    margin-left: 10px;
+    vertical-align: top;
+    background-repeat: no-repeat;
+    &.logo-ews {
+      margin-left: 0px;
+      margin-top: 19px;
+    }
+  }
+  .logo-ews {
+    background-image: url('/img/logo.png');
+    background-size: 292px 28px;
+    height: 28px;
+    width: 292px;
   }
   @media
     only screen and (-webkit-min-device-pixel-ratio: 2),
@@ -384,10 +392,24 @@
     only screen and (     -o-min-device-pixel-ratio: 2/1),
     only screen and (        min-device-pixel-ratio: 2),
     only screen and (                min-resolution: 192dpi),
-    only screen and (                min-resolution: 2dppx) { 
-        .navbar-brand {
+    only screen and (                min-resolution: 2dppx) {
+        .logo-ews {
           background-image: url('/img/logo@2x.png');
         }
+  }
+
+  .logo-edp {
+    background-image: url('/img/edp_sciences.png');
+    background-size: 152px 60px;
+    height: 60px;
+    width: 152px;
+  }
+
+  .logo-aanda {
+    background-image: url('/img/aanda.png');
+    background-size: 168px 60px;
+    height: 60px;
+    width: 168px;
   }
 
   .navbar-text {
