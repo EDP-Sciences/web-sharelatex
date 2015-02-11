@@ -38,6 +38,7 @@ define [
 				annotations: "="
 				navigateHighlights: "=",
 				onCtrlEnter: "="
+				objectDisplay: "="
 			}
 			link: (scope, element, attrs) ->
 				# Don't freak out if we're already in an apply callback
