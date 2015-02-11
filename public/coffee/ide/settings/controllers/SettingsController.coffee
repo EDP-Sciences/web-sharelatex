@@ -45,6 +45,9 @@ define [
 			if oldRootDoc_id? and rootDoc_id != oldRootDoc_id
 				settings.saveProjectSettings({rootDocId: rootDoc_id})
 
+		$scope.$watch "settings.objectDisplay", (newValue, prevValue) =>
+			if newValue != prevValue
+				settings.saveSettings objectDisplay: newValue == "true"
 
 		ide.socket.on "compilerUpdated", (compiler) =>
 			@ignoreUpdates = true
