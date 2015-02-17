@@ -7,7 +7,8 @@ module.exports =
 
 	registerPage : (req, res)->
 		if Settings.orcid?.disableRegistration?
-			return res.render 'orcid/no_register'
+			return res.render 'orcid/no_register',
+        disableOrcidRegistration: Settings.orcid.disableOrcidRegistration
 
 		sharedProjectData =
 			project_name:req.query.project_name
