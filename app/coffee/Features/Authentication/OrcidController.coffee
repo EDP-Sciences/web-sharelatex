@@ -64,6 +64,8 @@ module.exports = OrcidController =
     UserGetter.getUser {orcid: orcid}, (error, user) ->
       return (callback error) if error?
       return (callback null, user) if user?
+      if Settings.orcid?.disableOrcidRegistration?
+        return callback()
       UserCreator.createNewUser {orcid: orcid, holdingAccount: false}, (error, user) ->
         return (callback error) if error?
         callback null, user, true
@@ -173,7 +175,8 @@ module.exports = OrcidController =
           return next "Missing orcid"
 
         OrcidController.getUserByOrcid orcid, (error, user, isNew) ->
-          return(next error) if error?
+          return (next error) if error?
+          return (res.redirect '/register') if not user?
           logger.info 'get_user', user, isNew
           OrcidController.updateUserCredentials user, refresh_token, access_token, (error) ->
             if error
