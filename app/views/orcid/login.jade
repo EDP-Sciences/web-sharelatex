@@ -1,11 +1,4 @@
-.page-header.orcid(style="margin-top: 25px")
-    h1 #{translate("log_in_orcid")}
-
 style(type="text/css").
-    .page-header.orcid {
-        margin-top: 2em;
-        border-top: 1px solid #333;
-    }
     #connect-orcid-button {
         border: 1px solid #D3D3D3;
         padding: .3em;
@@ -42,17 +35,60 @@ style(type="text/css").
         width: 100%;
         text-align: center;
     }
-
-
 script(type="text/javascript").
     var oauthWindow;
     function openORCID() {
         oauthWindow = window.open("!{orcidLoginUrl}", "_blank", "toolbar=no, scrollbars=yes, width=500, height=600, top=500, left=500");
     }
 
-#orcid-container
-    button#connect-orcid-button(onclick="openORCID()")
-        img#orcid-id-logo(src="http://orcid.org/sites/default/files/images/orcid_24x24.png", width="24px", height="24px", alt="ORCID logo")
-        | Create or Connect your ORCID iD
+.card(ng-hide="show_direct_login")
+    .page-header(style="margin-top: 25px")
+        h1 #{translate("log_in_orcid")}
 
-p#orcid-description !{translate("orcid_description")}
+    #orcid-container
+        button#connect-orcid-button(onclick="openORCID()")
+            img#orcid-id-logo(src="http://orcid.org/sites/default/files/images/orcid_24x24.png", width="24px", height="24px", alt="ORCID logo")
+            | Create or Connect your ORCID iD
+
+    p#orcid-description !{translate("orcid_description")}
+
+.card(ng-show="show_direct_login", ng-cloak)
+    .page-header
+        h1 #{translate("log_in")}
+    form(async-form="login", name="loginForm", action='/login', method="POST", ng-cloak)
+        input(name='_csrf', type='hidden', value=csrfToken)
+        input(name='redir', type='hidden', value=redir)
+        form-messages(for="loginForm")
+        .form-group
+            input.form-control(
+            type='email',
+            name='email',
+            required,
+            placeholder='email@example.com',
+            ng-model="email",
+            ng-model-options="{ updateOn: 'blur' }",
+            focus="true"
+            )
+            span.small.text-primary(ng-show="loginForm.email.$invalid && loginForm.email.$dirty")
+                | #{translate("must_be_email_address")}
+        .form-group
+            input.form-control(
+            type='password',
+            name='password',
+            required,
+            placeholder='********',
+            ng-model="password"
+            )
+            span.small.text-primary(ng-show="loginForm.password.$invalid && loginForm.password.$dirty")
+                | #{translate("required")}
+        .actions
+            button.btn-primary.btn(
+            type='submit',
+            ng-disabled="loginForm.inflight"
+            )
+                span(ng-show="!loginForm.inflight") #{translate("login")}
+                span(ng-show="loginForm.inflight") #{translate("logging_in")}...
+            a.pull-right(href='/user/password/reset') #{translate("forgot_your_password")}?
+.card(ng-cloak)
+    a(ng-hide="show_direct_login", ng-click="show_direct_login = true", href="#") #{translate("direct_login")}
+    a(ng-show="show_direct_login", ng-click="show_direct_login = false", href="#") #{translate("orcid_login")}
