@@ -26,6 +26,7 @@ define [
         @editor.off "changeSession", onFirstInitialize
       @editor.on "changeSession", onFirstInitialize
 
+      scope.cds = open: false
       scope.$watch "objectDisplay", (value) =>
         if value == "true" then @enable() else @disable()
 
@@ -96,10 +97,8 @@ define [
       @clearObjectLabel()
       @updateObjects []
 
-    showObjectLabel: (object) ->
-      position = object.range.start
+    getPosition: (position) ->
       # Heavily borrowed from HighlightsManager, should probably generalize this
-
       ace = $(@editor.renderer.container).find ".ace_scroller"
       offset = ace.offset()
       # height = ace.height()
@@ -107,18 +106,25 @@ define [
       coordinates.pageX = coordinates.pageX - offset.left
       coordinates.pageY = coordinates.pageY - offset.top
 
-      top = coordinates.pageY + @editor.renderer.lineHeight
-      bottom = "auto"
+      top: coordinates.pageY + @editor.renderer.lineHeight
+      bottom: "auto"
+      left: coordinates.pageX
+      right: "auto"
 
-      @scope.$broadcast "cdsObjectDisplayUpdate",
-        object: object
-        top: top
-        bottom: bottom
-        left: coordinates.pageX
-        right: "auto"
+    showObjectLabel: (object) ->
+      pos = @getPosition object.range.start
+      scope = @scope
+      scope.$apply () ->
+        scope.cds.value = object
+        scope.cds.top = pos.top
+        scope.cds.bottom = pos.bottom
+        scope.cds.left = pos.left
+        scope.cds.right = pos.right
 
     clearObjectLabel: () ->
-      @scope.$broadcast "cdsObjectDisplayUpdate"
+      scope = @scope
+      scope.$apply () ->
+        scope.cds.value = null
 
     updateObjects: (objects) ->
       objectMissingInArray = (object, array) ->
