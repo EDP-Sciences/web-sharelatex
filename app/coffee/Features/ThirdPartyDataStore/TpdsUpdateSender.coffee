@@ -40,7 +40,7 @@ module.exports =
 		metrics.inc("tpds.add-doc")
 		options.streamOrigin = settings.apis.docstore.pubUrl + path.join("/project/#{options.project_id}/doc/","#{options.doc_id}/raw")
 		@_addEntity(options, callback)
-  
+
 
 	moveEntity : (options, callback = (err)->)->
 		metrics.inc("tpds.move-entity")
