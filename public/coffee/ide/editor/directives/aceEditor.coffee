@@ -254,7 +254,14 @@ define [
 					>
 						{{ annotationLabel.text }}
 					</div>
-					<cds-object-display ng-model="objectDisplay" />
+					<cds-object-display
+					  cds-value="cds.value"
+            cds-open="cds.open"
+            cds-left="cds.left"
+            cds-right="cds.right"
+            cds-top="cds.top"
+            cds-bottom="cds.bottom"
+					  />
 
 					<a
 						href

@@ -7,6 +7,9 @@ define [
 
     restrict: "E"
     scope:
-      error: "="
-      object_data: "="
+      value: "=cdsValue"
+      top: "=cdsTop"
+      bottom: "=cdsBottom"
+      left: "=cdsLeft"
+      right: "=cdsRight"
     templateUrl: "cdsObjectDisplayTemplate"

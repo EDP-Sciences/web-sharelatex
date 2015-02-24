@@ -7,7 +7,7 @@ script(type='text/ng-template', id='cdsObjectDisplayTemplate')
         ng-show="object_data || error || pending"
     )
         .error(ng-show="error").
-            There was an error finding the given object ({{ error.status }})
+            There was an error finding the given object ({{ error }})
 
         .pending(ng-show="pending").
             Searching object...
