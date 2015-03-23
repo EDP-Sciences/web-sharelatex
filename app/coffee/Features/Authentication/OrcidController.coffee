@@ -190,7 +190,7 @@ module.exports = OrcidController =
                 return next error
               AuthenticationController._recordSuccessfulLogin user._id, (error) ->
                 return(next error) if error?
-              AuthenticationController._establishUserSession req, user, (error) ->
+              AuthenticationController.establishUserSession req, user, (error) ->
                 return(next error) if error?
                 logger.log user.orcid, user.email, user_id: user._id.toString(), "successful ORCID log in"
                 res.render 'orcid/popup_close', redirect: "#{Settings.siteUrl}/project"

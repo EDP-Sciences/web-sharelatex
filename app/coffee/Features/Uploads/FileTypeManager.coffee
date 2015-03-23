@@ -44,8 +44,8 @@ module.exports = FileTypeManager =
 			else
 				return callback null, false
 
-	shouldIgnore: (path, callback = (error, result) ->) ->
-		name = Path.basename(path)
+	shouldIgnore: (fsPath, callback = (error, result) ->) ->
+		name = Path.basename fsPath
 		extension = name.split(".").slice(-1)[0]
 		if extension?
 			extension = extension.toLowerCase()
@@ -59,7 +59,7 @@ module.exports = FileTypeManager =
 		return callback null, ignore if ignore
 
 		# Ignore empty files
-		fs.stat path, (error, stat) ->
+		fs.stat fsPath, (error, stat) ->
 			return callback(error) if error?
 			callback null, stat.size <= 0
 

@@ -21,8 +21,8 @@ block content
 
 			.alert.alert-warning.small(ng-if="connection.reconnection_countdown")
 				strong #{translate("lost_connection")}.
-				| #{translate("reconnecting_in_x_secs", {seconds:"{{ connection.reconnection_countdown }}"})}.
-				a.pull-right(href, ng-click="tryReconnectNow()") #{translate("try_now")}
+				|  #{translate("reconnecting_in_x_secs", {seconds:"{{ connection.reconnection_countdown }}"})}.
+				a.pull-right.alert-link(href, ng-click="tryReconnectNow()") #{translate("try_now")}
 
 			.alert.alert-warning.small(ng-if="connection.reconnecting")
 				strong #{translate("reconnecting")}...
@@ -56,7 +56,6 @@ block content
 						include ./editor/binary-file
 						include ./editor/track-changes
 						include ./editor/publish-template
-						include ./editor/dropbox
 
 			.ui-layout-east
 				include ./editor/chat
@@ -75,7 +74,7 @@ block content
 		.modal-footer
 			button.btn.btn-info(ng-click="done()") #{translate("ok")}
 
-	script(src='/socket.io/socket.io.js')
+	script(src='#{settings.websocketsUrl}/socket.io/socket.io.js')
 
 	//- We need to do .replace(/\//g, '\\/') do that '</script>' -> '<\/script>'
 	//- and doesn't prematurely end the script tag.
@@ -101,6 +100,9 @@ block content
 					deps: ["libs/compatibility"]
 				},
 				"ace/ext-searchbox": {
+					deps: ["ace/ace"]
+				},
+				"ace/ext-language-tools": {
 					deps: ["ace/ace"]
 				}
 			},

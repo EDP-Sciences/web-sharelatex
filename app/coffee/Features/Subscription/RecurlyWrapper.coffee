@@ -115,14 +115,30 @@ module.exports = RecurlyWrapper =
 		)
 
 	getAccounts: (callback)->
-		@apiRequest({
-			url: "accounts"
-			qs:
-				per_page:2000
-		}, (error, response, body) =>
-			return callback(error) if error?
-			@_parseXml body, callback
-		)
+		allAccounts = []
+		getPageOfAccounts = (cursor = null)=>
+			opts =
+				url: "accounts"
+				qs:
+					per_page:200
+			if cursor?
+				opts.qs.cursor = cursor
+			@apiRequest opts, (error, response, body) =>
+				return callback(error) if error?
+				@_parseXml body, (err, data)->
+					if err?
+						logger.err err:err, "could not get accoutns"
+						callback(err)
+					allAccounts = allAccounts.concat(data.accounts)
+					logger.log "got another #{data.accounts.length}, total now #{allAccounts.length}"
+					cursor = response.headers.link?.match(/cursor=([0-9]+)&/)?[1]
+					if cursor?
+						getPageOfAccounts(cursor)
+					else
+						callback(err, allAccounts)
+
+		getPageOfAccounts()
+
 
 	getAccount: (accountId, callback) ->
 		@apiRequest({
@@ -158,7 +174,7 @@ module.exports = RecurlyWrapper =
 			@_parseSubscriptionXml responseBody, callback
 		)
 
-	createFixedAmmountCoupon: (coupon_code, name, currencyCode, discount_in_cents, callback)->
+	createFixedAmmountCoupon: (coupon_code, name, currencyCode, discount_in_cents, plan_code, callback)->
 		requestBody = """
 			<coupon>
 				<coupon_code>#{coupon_code}</coupon_code>
@@ -167,6 +183,10 @@ module.exports = RecurlyWrapper =
 				<discount_in_cents>
 					<#{currencyCode}>#{discount_in_cents}</#{currencyCode}>
 				</discount_in_cents>
+				<plan_codes>
+					<plan_code>#{plan_code}</plan_code>
+				</plan_codes>
+				<applies_to_all_plans>false</applies_to_all_plans>
 			</coupon>
 		"""
 		logger.log coupon_code:coupon_code, requestBody:requestBody, "creating coupon"

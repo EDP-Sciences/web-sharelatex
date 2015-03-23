@@ -25,8 +25,9 @@ module.exports = AuthenticationController =
 				if user?
 					LoginRateLimiter.recordSuccessfulLogin email
 					AuthenticationController._recordSuccessfulLogin user._id
-					AuthenticationController._establishUserSession req, user, (error) ->
+					AuthenticationController.establishUserSession req, user, (error) ->
 						return next(error) if error?
+						req.session.justLoggedIn = true
 						logger.log email: email, user_id: user._id.toString(), "successful log in"
 						res.send redir: redir
 				else
@@ -118,7 +119,7 @@ module.exports = AuthenticationController =
 		Metrics.inc "user.login.failed"
 		callback()
 
-	_establishUserSession: (req, user, callback = (error) ->) ->
+	establishUserSession: (req, user, callback = (error) ->) ->
 		lightUser =
 			_id: user._id
 			first_name: user.first_name
@@ -126,6 +127,12 @@ module.exports = AuthenticationController =
 			isAdmin: user.isAdmin
 			email: user.email
 			referal_id: user.referal_id
+		# Regenerate the session to get a new sessionID (cookie value) to
+		# protect against session fixation attacks
+		oldSession = req.session
+		req.sessionStore.generate(req)
+		for key, value of oldSession
+			req.session[key] = value
+
 		req.session.user = lightUser
-		req.session.justLoggedIn = true
-		req.session.save callback
+		callback()

@@ -4,6 +4,7 @@ _     = require "underscore"
 FileTypeManager  = require "./FileTypeManager"
 EditorController = require "../Editor/EditorController"
 ProjectLocator   = require "../Project/ProjectLocator"
+join_path = (require "path").join
 
 module.exports = FileSystemImportManager =
 	addDoc: (project_id, folder_id, name, path, replace, callback = (error, doc)-> )->
@@ -42,10 +43,11 @@ module.exports = FileSystemImportManager =
 			return callback(error) if error?
 			jobs = _.map entries, (entry) =>
 				(callback) =>
-					FileTypeManager.shouldIgnore entry, (error, ignore) =>
+					fsPath = join_path folderPath, entry
+					FileTypeManager.shouldIgnore fsPath, (error, ignore) =>
 						return callback(error) if error?
 						if !ignore
-							@addEntity project_id, parent_folder_id, entry, "#{folderPath}/#{entry}", replace, callback
+							@addEntity project_id, parent_folder_id, entry, fsPath, replace, callback
 						else
 							callback()
 			async.parallelLimit jobs, 5, callback
