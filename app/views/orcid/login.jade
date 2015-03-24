@@ -24,7 +24,7 @@ style(type="text/css").
         padding: 0;
         float: left;
     }
-    #orcid-description {
+    #orcid-description, #login-description {
         margin-top: 1.2em;
         padding: .8em;
         font-size: smaller;
@@ -89,6 +89,7 @@ script(type="text/javascript").
                 span(ng-show="!loginForm.inflight") #{translate("login")}
                 span(ng-show="loginForm.inflight") #{translate("logging_in")}...
             a.pull-right(href='/user/password/reset') #{translate("forgot_your_password")}?
+    p#login-description !{translate("login_description")}
 .card(ng-cloak)
     a(ng-hide="show_direct_login", ng-click="show_direct_login = true", href="#") #{translate("direct_login")}
     a(ng-show="show_direct_login", ng-click="show_direct_login = false", href="#") #{translate("orcid_login")}
