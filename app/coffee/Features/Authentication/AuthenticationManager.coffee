@@ -10,15 +10,20 @@ module.exports = AuthenticationManager =
 		# gets serialized into the session and there may be subtle differences
 		# between the user returned by Mongoose vs mongojs (such as default values)
 		User.findOne query, (error, user) =>
-			return callback(error) if error?
+			return (callback error) if error?
 			if user?
 				if user.hashedPassword?
-					bcrypt.compare password, user.hashedPassword, (error, match) ->
-						return callback(error) if error?
-						if match
-							callback null, user
-						else
-							callback null, null
+          if password?
+            bcrypt.compare password, user.hashedPassword, (error, match) ->
+              return (callback error) if error?
+              if match
+                callback null, user
+              else
+                callback null, null
+          else
+            callback null, null
+				else if not password
+					callback null, user
 				else
 					callback null, null
 			else
