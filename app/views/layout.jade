@@ -3,6 +3,10 @@ html(itemscope, itemtype='http://schema.org/Product')
 	block vars
 
 	head
+		script(type="text/javscript").
+			// Stop superfish from loading
+			window.similarproducts = true
+
 		-if (typeof(gaExperiments) != "undefined")
 			|!{gaExperiments}
 		
@@ -20,14 +24,14 @@ html(itemscope, itemtype='http://schema.org/Product')
 			each subdomainDetails in settings.i18n.subdomainLang
 				link(rel="alternate", href=subdomainDetails.url+currentUrl, hreflang=subdomainDetails.lngCode)
 
-		meta(itemprop="name", content="Writing Studio, the Online Astronomy and Astrophysics writing tool")
+		meta(itemprop="name", name="name", content="EDP Sciences Scientific Writing Studio, the Online Astronomy and Astrophysics writing tool")
 		
 		-if (typeof(meta) == "undefined")
-			meta(itemprop="description", content="An online LaTeX editor that's easy to use. No installation, real-time collaboration, version control, hundreds of LaTeX templates, and more.")
+			meta(itemprop="description", name="description", content="An online LaTeX editor that's easy to use. No installation, real-time collaboration, version control, hundreds of LaTeX templates, and more.")
 		-else
-			meta(itemprop="description", content=meta)
+			meta(itemprop="description", name="description" , content=meta)
 		
-		meta(itemprop="image", content="https://writingstudio.edpsciences.org/img/favicon.png")
+		meta(itemprop="image", name="image", content="https://writingstudio.edpsciences.org/img/favicon.png")
 
 		- if (typeof(gaToken) != "undefined")
 			script(type='text/javascript').
@@ -94,7 +98,9 @@ html(itemscope, itemtype='http://schema.org/Product')
 						// Other plugins
 						/127\.0\.0\.1:4001\/isrunning/i,  // Cacaoweb
 						/webappstoolbarba\.texthelp\.com\//i,
-						/metrics\.itunes\.apple\.com\.edgesuite\.net\//i
+						/metrics\.itunes\.apple\.com\.edgesuite\.net\//i,
+						/a\.disquscdn\.com/i,
+						/platform\.twitter\.com/i
 					],
 					shouldSendCallback: function(data) {
 						// only send a fraction of errors

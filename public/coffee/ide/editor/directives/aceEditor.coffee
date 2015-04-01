@@ -20,7 +20,7 @@ define [
 			url = ace.config._moduleUrl(args...) + "?fingerprint=#{window.aceFingerprint}"
 			return url
 
-	App.directive "aceEditor", ($timeout, $compile, $rootScope, event_tracking) ->
+	App.directive "aceEditor", ($timeout, $compile, $rootScope, event_tracking, localStorage) ->
 		monkeyPatchSearch($rootScope, $compile)
 
 		return  {
@@ -51,6 +51,7 @@ define [
 						@$originalApply(fn);
 
 				editor = ace.edit(element.find(".ace-editor-body")[0])
+				editor.$blockScrolling = Infinity
 				window.editors ||= []
 				window.editors.push editor
 
@@ -60,7 +61,7 @@ define [
 				spellCheckManager     = new SpellCheckManager(scope, editor, element)
 				undoManager           = new UndoManager(scope, editor, element)
 				highlightsManager     = new HighlightsManager(scope, editor, element)
-				cursorPositionManager = new CursorPositionManager(scope, editor, element)
+				cursorPositionManager = new CursorPositionManager(scope, editor, element, localStorage)
 				objectDisplayManager  = new ObjectDisplayManager scope, editor, element
 
 				# Prevert Ctrl|Cmd-S from triggering save dialog

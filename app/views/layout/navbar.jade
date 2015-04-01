@@ -3,10 +3,13 @@ nav.navbar.navbar-default
 		.navbar-header
 			button.navbar-toggle(ng-init="navCollapsed = true", ng-click="navCollapsed = !navCollapsed", ng-class="{active: !navCollapsed}")
 				i.fa.fa-bars
-			a(href='/').navbar-brand
+			.navbar-brand
+				a(href='/').logo-ews
+				a(href="http://publications.edpsciences.org/").logo-edp
+				a(href="http://www.aanda.org/").logo-aanda
 
 		.navbar-collapse.collapse(collapse="navCollapsed")
-			
+
 			ul.nav.navbar-nav.navbar-right
 				each item in nav.header
 					if ((item.only_when_logged_in && session && session.user) || (item.only_when_logged_out && (!session || !session.user)) || (!item.only_when_logged_out && !item.only_when_logged_in))

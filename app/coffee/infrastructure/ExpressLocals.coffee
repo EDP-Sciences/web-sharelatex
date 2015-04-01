@@ -151,5 +151,6 @@ module.exports = (app)->
 		if Settings.reloadModuleViewsOnEachRequest
 			Modules.loadViewIncludes()
 		res.locals.moduleIncludes = Modules.moduleIncludes
+		res.locals.moduleIncludesAvailable = Modules.moduleIncludesAvailable
 		next()
 

@@ -268,6 +268,8 @@ module.exports =
     cds_url: "http://cdsweb.u-strasbg.fr/cgi-bin/nph-sesame/-ox/SNVA"
 
 	nav:
+		title: "ShareLaTeX Community Edition"
+		
 		left_footer: [{
 			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2014"
 		}, {
@@ -275,7 +277,7 @@ module.exports =
 		}]
 
 		right_footer: [{
-			text: "<i class='fa fa-github-square'></i> Contribute on Github"
+			text: "<i class='fa fa-github-square'></i> Fork on Github!"
 			url: "https://github.com/EDP-Sciences/sharelatex"
 		}]
 
