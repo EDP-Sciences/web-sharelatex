@@ -100,24 +100,6 @@ block content
 
 							hr
 
-							p.small
-								| #{translate("newsletter_info_and_unsubscribe")} 
-								a(
-									href,
-									ng-click="unsubscribe()",
-									ng-show="subscribed && !unsubscribing"
-								) #{translate("unsubscribe")}
-								span(
-									ng-show="unsubscribing"
-								)
-									i.fa.fa-spin.fa-refresh
-									| #{translate("unsubscribing")}
-								span.text-success(
-									ng-show="!subscribed"
-								)
-									i.fa.fa-check
-									| #{translate("unsubscribed")}
-
 							p #{translate("need_to_leave")} 
 								a(href, ng-click="deleteAccount()")  #{translate("delete_your_account")}
 
