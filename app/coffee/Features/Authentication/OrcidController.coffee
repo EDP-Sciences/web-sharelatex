@@ -126,6 +126,7 @@ module.exports = OrcidController =
       response_type: "code"
       scope: OrcidController.scope
       redirect_uri: OrcidController.redirect_uri
+      show_login: "true"
     res.locals.orcidLoginUrl = Url.format url
     next()
 
