@@ -176,7 +176,7 @@ module.exports = OrcidController =
 
         OrcidController.getUserByOrcid orcid, (error, user, isNew) ->
           return (next error) if error?
-          return (res.redirect '/register') if not user?
+          return (res.render 'orcid/popup_close', redirect: "#{Settings.siteUrl}/register") if not user?
           logger.info 'get_user', user, isNew
           OrcidController.updateUserCredentials user, refresh_token, access_token, (error) ->
             if error
