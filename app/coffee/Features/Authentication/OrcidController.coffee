@@ -64,8 +64,9 @@ module.exports = OrcidController =
     UserGetter.getUser {orcid: orcid}, (error, user) ->
       return (callback error) if error?
       return (callback null, user) if user?
-      if Settings.orcid?.disableOrcidRegistration?
-        return callback()
+      if Settings.orcid?.disableOrcidRegistration? and
+        (!Settings.orcid?.acceptedOrcids? or orcid not in Settings.orcid.acceptedOrcids)
+          return callback()
       UserCreator.createNewUser {orcid: orcid, holdingAccount: false}, (error, user) ->
         return (callback error) if error?
         callback null, user, true
