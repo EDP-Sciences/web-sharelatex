@@ -314,7 +314,7 @@ module.exports = _.template '''
 											<td class="headerContent" style="padding: 25px;border-bottom:#dadf90;background-color:#F6F6F6;text-align:left;">
 
 												<!-- // Begin Module: Standard Header Image \\ -->
-												<img src="https://writingstudio.aws/edpsciences.org/img/logo.png" style="max-width:600px;" id="headerImage campaign-icon"  />
+												<img src="http://writingstudio.aws.edpsciences.org/img/ews/logo.png" style="max-width:600px;" id="headerImage campaign-icon"  />
 												<!-- // End Module: Standard Header Image \\ -->
 
 											</td>
@@ -358,7 +358,7 @@ module.exports = _.template '''
 													<tr>
 														<td colspan="2" valign="middle" id="social">
 															<div>
-																&nbsp;<a href="http://twitter.com/#!/sharelatex">Follow on Twitter</a> | <a href="http://www.facebook.com/pages/ShareLaTeX/301671376556660">Friend on Facebook</a>
+																&nbsp;<a href="http://writingstudio.aws.edpsciences.org">Writing Studio</a> | <a href="http://publications.edpsciences.org">EDP Sciences</a>
 															</div>
 														</td>
 													</tr>
