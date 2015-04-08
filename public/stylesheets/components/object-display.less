@@ -2,13 +2,13 @@
 .cdsDisplayObjectOverlay {
   position: relative;
   display: none;
-  background-color: white;
+  background: white url(/img/object-display/cds.png) no-repeat;
+  padding-left: 40px;
   border: 1px solid darkviolet;
   color: darkviolet;
   z-index: 10;
   pointer-events: none;
-  width: 280px;
-  border-radius: 4px;
+  width: 360px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   -webkit-box-shadow:0 2px 4px rgba(0, 0, 0, 0.1);
 
@@ -21,12 +21,11 @@
     .name {
       padding: 2px;
       font-weight: bold;
-      font-size: 150%;
     }
     .attribute {
       padding: 2px;
       &.simbad {
-        color: darkred;
+        color: darkviolet;
       }
       &.vizier {
         color: darkblue;
