@@ -15,4 +15,4 @@ script(type='text/ng-template', id='cdsObjectDisplayTemplate')
         .content(ng-show="object_data")
             span.name {{ object_data.name }}
             span.attribute(ng-repeat="(key, value) in object_data", ng-class="key" ng-if="key != 'name'").
-                Found in {{key}} as {{value}}
+                found in {{key}} as {{value}}

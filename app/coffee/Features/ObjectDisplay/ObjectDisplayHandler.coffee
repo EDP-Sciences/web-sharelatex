@@ -23,9 +23,9 @@ simplifyObjectData = (data) ->
   for resolver in (resolvers or [])
     resolver_name = resolver?.$?.name
     switch
-      when (resolver_name.indexOf "Simbad") >= 0 then result.simbad = getName resolver
-      when (resolver_name.indexOf "VizieR") >= 0 then result.vizier = getName resolver
-      when (resolver_name.indexOf "NED") >= 0 then result.ned = getName resolver
+      when (resolver_name.indexOf "Simbad") >= 0 then result.Simbad = getName resolver
+      when (resolver_name.indexOf "VizieR") >= 0 then result.VizieR = getName resolver
+      when (resolver_name.indexOf "NED") >= 0 then result.NED = getName resolver
       else result.unknown = resolver_name
   return result
 
