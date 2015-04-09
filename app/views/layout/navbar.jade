@@ -13,7 +13,7 @@ nav.navbar.navbar-default
 					if ((item.only_when_logged_in && session && session.user) || (item.only_when_logged_out && (!session || !session.user)) || (!item.only_when_logged_out && !item.only_when_logged_in))
 						if item.dropdown
 							li.dropdown(class=item.class)
-								a.dropdown-toggle(href)
+								a.dropdown-toggle(href="#")
 									| !{translate(item.text)}
 									b.caret
 								ul.dropdown-menu
