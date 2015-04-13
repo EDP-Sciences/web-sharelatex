@@ -18,7 +18,7 @@ define [
 				result == orcid[18]
 
 			is_valid_orcid = (orcid) ->
-				regexp = /^(?:(?:http:\/\/)orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx])$/i
+				regexp = /^(?:(?:http:\/\/)?orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx])$/i
 				result = regexp.exec orcid
 				return false if not result
 				is_valid_checksum result[1]
