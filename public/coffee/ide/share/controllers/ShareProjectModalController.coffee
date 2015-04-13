@@ -1,6 +1,32 @@
 define [
 	"base"
 ], (App) ->
+	App.directive "emailOrOrcid", () ->
+		restrict: "A"
+		require: "ngModel"
+		link: (scope, elm, attrs, ctrl) ->
+			email_validator = ctrl.$validators.email
+
+			is_valid_checksum = (orcid) ->
+				total = 0
+				for i in [0...18]
+					if i % 5 != 4
+						total = (total + parseInt orcid[i]) * 2
+				remainder = total % 11
+				result = 12 - remainder
+				result = "X" if result == 10
+				result == orcid[18]
+
+			is_valid_orcid = (orcid) ->
+				regexp = /^(?:(?:http:\/\/)orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx])$/i
+				result = regexp.exec orcid
+				return false if not result
+				is_valid_checksum result[1]
+
+			ctrl.$validators.email = (modelValue, viewValue) ->
+				return true if is_valid_orcid viewValue
+				email_validator modelValue, viewValue
+
 	App.controller "ShareProjectModalController", ["$scope", "$modalInstance", "$timeout", "projectMembers", "$modal", ($scope, $modalInstance, $timeout, projectMembers, $modal) ->
 		$scope.inputs = {
 			privileges: "readAndWrite"
