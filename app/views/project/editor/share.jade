@@ -26,12 +26,12 @@ script(type='text/ng-template', id='shareProjectModalTemplate')
 						ng-click="openMakePrivateModal()"
 					) #{translate("make_private")}
 			.row.project-member
-				.col-xs-8 {{ project.owner.email }}
+				.col-xs-8 {{ project.owner.email || project.owner.orcid }}
 				.text-right(
 					ng-class="{'col-xs-3': project.members.length > 0, 'col-xs-4': project.members.length == 0}"
 				) #{translate("owner")}
 			.row.project-member(ng-repeat="member in project.members")
-				.col-xs-8 {{ member.email }}
+				.col-xs-8 {{ member.email || member.orcid }}
 				.col-xs-3.text-right
 					span(ng-show="member.privileges == 'readAndWrite'") #{translate("can_edit")}
 					span(ng-show="member.privileges == 'readOnly'") #{translate("read_only")}
@@ -44,14 +44,15 @@ script(type='text/ng-template', id='shareProjectModalTemplate')
 					)
 						i.fa.fa-times
 			.row.invite-controls
-				form(ng-show="canAddCollaborators")
+				form(ng-show="canAddCollaborators", novalidate)
 					.small #{translate("share_with_your_collabs")}
 					.form-group
 						input.form-control(
 							type="email"
-							placeholder="Enter email address..."
+							placeholder=translate("enter_email_or_orcid_placeholder")
 							ng-model="inputs.email"
 							focus-on="open"
+							email-or-orcid
 						)
 					.form-group
 						.pull-right
