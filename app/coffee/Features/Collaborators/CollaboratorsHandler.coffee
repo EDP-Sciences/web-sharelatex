@@ -18,7 +18,8 @@ updateProjectWithUserPrivileges = (project_id, user, privilegeLevel, callback)->
 	else if privilegeLevel == "readOnly"
 		level = "readOnly_refs": user
 		logger.log privileges: "readOnly", user: user, project_id: project_id, "adding user"
-	Project.update {_id: project_id}, {$push: level}, callback
+	Project.update {_id: project_id}, {$push: level}, ->
+		callback()
 
 
 notifyUserViaEmail = (project_id, email, callback)->
@@ -41,7 +42,7 @@ notifyUserViaEmail = (project_id, email, callback)->
 			owner: project.owner_ref
 		EmailHandler.sendEmail "projectSharedWithYou", emailOptions, callback
 
-orcid_regexp = /^(?:(?:http:\/\/)orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx])$/i
+orcid_regexp = /^(?:(?:http:\/\/)?orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx])$/i
 
 is_orcid = (orcid_or_email) ->
 	logger.log 'is_orcid', orcid_or_email, orcid_regexp.test orcid_or_email
