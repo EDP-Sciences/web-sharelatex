@@ -14,7 +14,7 @@ define [
 						total = (total + parseInt orcid[i]) * 2
 				remainder = total % 11
 				result = 12 - remainder
-				result = "X" if result == 10
+				if result == 10 then result = "X" else result = result.toString()
 				result == orcid[18]
 
 			is_valid_orcid = (orcid) ->
