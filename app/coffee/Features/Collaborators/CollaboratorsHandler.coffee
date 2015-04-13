@@ -7,7 +7,7 @@ logger = require('logger-sharelatex')
 async = require("async")
 
 createHoldingAccount = (orcid, email, callback)->
-	user = new User 'orcid': orcid, 'email':email, holdingAccount:true
+	user = new User 'orcid': orcid, 'email': email, holdingAccount: true
 	user.save (err)->
 		callback(err, user)
 
@@ -45,7 +45,8 @@ orcid_regexp = /^(?:(?:http:\/\/)orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx]
 
 is_orcid = (orcid_or_email) ->
 	logger.log 'is_orcid', orcid_or_email, orcid_regexp.test orcid_or_email
-	orcid_regexp.test orcid_or_email
+	result = orcid_regexp.exec orcid_or_email
+	result[1] if result?
 
 module.exports =
 
@@ -65,8 +66,9 @@ module.exports =
 			  @addUserToProject project_id, user_id, newPrivilegeLevel, callback
 
 	addUserToProject: (project_id, orcid_or_email, privilegeLevel, callback) ->
-		if is_orcid orcid_or_email
-			@addUserToProjectByOrcid project_id, orcid_or_email, privilegeLevel, callback
+		orcid = is_orcid orcid_or_email
+		if orcid
+			@addUserToProjectByOrcid project_id, orcid, privilegeLevel, callback
 		else
 			@addUserToProjectByEmail project_id, orcid_or_email, privilegeLevel, callback
 
