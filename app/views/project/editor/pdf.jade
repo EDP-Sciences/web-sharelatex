@@ -147,6 +147,7 @@ div.full-size.pdf(ng-controller="PdfController")
 				span.line-no
 					span(ng-show="entry.file") {{ entry.file }}
 					span(ng-show="entry.line") , line {{ entry.line }}
+				p.entry-emitter(ng-show="entry.emitter") {{ entry.emitter }}
 				p.entry-message(ng-show="entry.message") {{ entry.message }}
 				p.entry-content(ng-show="entry.content") {{ entry.content }}
 

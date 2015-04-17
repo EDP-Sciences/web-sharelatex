@@ -1,16 +1,39 @@
 define(function() {
     // Define some constants
     var LOG_WRAP_LIMIT = 79;
-    var LATEX_WARNING_REGEX = /^LaTeX Warning: (.*)$/;
+
+    // Mono or multiline " standard " LaTeX messages (how they should be...).
+    // May contains \MessageBreak to multiline messages
+    // see http://tug.ctan.org/tex-archive/macros/latex/base/lterror.dtx
+    // * First array element is regex for the 1st msg line:
+    // 1st () catches the emitter (pkg, class or LaTeX core)
+    // 2nd () catches the level (warning or error)
+    // 3rd () catches the message
+    // * 2nd array element is regex for the continuation lines
+    // This is an ordered list: first in the list is first considered
+    var LATEX_MSG_REGEXES = [
+        // this first one doesn't used \MessageBreak for line break, so it's a bit different
+        [/^(LaTeX) (Warning): (Unused global option\(s\):)$/,/^\s{4}(.*)$/],
+        [/^(LaTeX) (Warning): (.*)$/,/^\s{15}(.*)$/],
+        [/^(Font) (Warning): (.*)$/ ,/^\s{8}(.*)$/],
+        [/^(Class \S+) (Warning): (.*)$/,/^\(\S+\)\s{13}(.*)$/ ],
+        [/^(Package \S+) (Warning): (.*)$/,/^\(\S+\)\s{16}(.*)$/ ],
+        [/^\! (LaTeX) (Error): (.*)$/, /^\s{15}(.*)$/],
+        [/^\! (Class \S+) (Error): (.*)$/,/^\(\S+\)\s{13}(.*)$/ ],
+        [/^\! (Package \S+) (Error): (.*)$/,/^\(\S+\)\s{16}(.*)$/ ],
+    ]
+    // box warnings
     var HBOX_WARNING_REGEX = /^(Over|Under)full \\(v|h)box/;
-    var BIBER_WARNING_REGEX = /^Package biblatex Warning: (.*)$/;
-    var NATBIB_WARNING_REGEX = /^Package natbib Warning: (.*)$/;
-    // This is used to parse the line number from common latex warnings
-    var LINES_REGEX = /lines? ([0-9]+)/;
+    // TeX error message always begin with '! ' and end with the line error
+    var TEX_ERROR_REGEX = /^\!\s(.*)$/;
+    
+    // This is used to parse the line number from common latex warnings and box warnings
+    var LINES_WARNING_REGEX = /lines? ([0-9]+)/;
+    // This is used to parse the line number from common latex error
+    var LINES_ERROR_REGEX = /^l.([0-9]+)\s/;
 
     var LogText = function(text) {
         this.text = text.replace(/(\r\n)|\r/g, "\n");
-
         // Join any lines which look like they have wrapped.
         var wrappedLines = this.text.split("\n");
         this.lines = [wrappedLines[0]];
@@ -48,12 +71,14 @@ define(function() {
         };
 
         this.linesUpToNextMatchingLine = function(match) {
+            var limit = 100;
             var lines = [];
             var nextLine = this.nextLine();
             if (nextLine !== false) {
                 lines.push(nextLine);
             }
-            while (nextLine !== false && !nextLine.match(match) && nextLine !== false) {
+            var i = 1;
+            while (nextLine !== false && !nextLine.match(match) && i <= limit) {
                 nextLine = this.nextLine();
                 if (nextLine !== false) {
                     lines.push(nextLine);
@@ -61,163 +86,147 @@ define(function() {
             }
             return lines;
         }
-    }).call(LogText.prototype);
 
-    var state = {
-        NORMAL : 0,
-        ERROR  : 1
-    };
+        this.linesUntilLineMatch = function(regex) {
+            var lines = [];
+            var nextLine = '';
+            while (nextLine = this.nextLine()) {
+                var match = null;
+                if (match = nextLine.match(regex)) {
+                    lines.push(match[1]);
+                }
+            }
+            this.rewindLine;
+            return lines;
+        }
+        
+    }).call(LogText.prototype);
 
     var LatexParser = function(text, options) {
         this.log = new LogText(text);
-        this.state = state.NORMAL;
 
         options = options || {};
         this.fileBaseNames = options.fileBaseNames || [/compiles/, /\/usr\/local/];
-        this.ignoreDuplicates = options.ignoreDuplicates;
-
+        this.ignoreDuplicates  = options.ignoreDuplicates;
+        this.newOutput  = options.newOutput;
+        
         this.data  = [];
         this.fileStack = [];
         this.currentFileList = this.rootFileList = [];
-
+        
         this.openParens = 0;
     };
 
     (function() {
         this.parse = function() {
             while ((this.currentLine = this.log.nextLine()) !== false) {
-                if (this.state == state.NORMAL) {
-                    if (this.currentLineIsError()) {
-                        this.state = state.ERROR;
-                        this.currentError = {
-                            line        : null,
-                            file        : this.currentFilePath,
-                            level       : "error",
-                            message     : this.currentLine.slice(2),
-                            content     : "",
-                            raw         : this.currentLine + "\n"
-                        }
-                    } else if (this.currentLineIsWarning()) {
-                        this.parseSingleWarningLine(LATEX_WARNING_REGEX);
-                    } else if (this.currentLineIsHboxWarning()) {
-                        this.parseHboxLine();
-                    } else if (this.currentLineIsBiberWarning()) {
-                        this.parseBiberWarningLine();
-                    } else if (this.currentLineIsNatbibWarning()) {
-                        this.parseSingleWarningLine(NATBIB_WARNING_REGEX);
-                    } else {
-                        this.parseParensForFilenames();
-                    }
-                }
-
-                if (this.state == state.ERROR) {
-                    this.currentError.content += this.log.linesUpToNextMatchingLine(/^l\.[0-9]+/).join("\n");
-                    this.currentError.content += "\n";
-                    this.currentError.content += this.log.linesUpToNextWhitespaceLine().join("\n");
-                    this.currentError.content += "\n";
-                    this.currentError.content += this.log.linesUpToNextWhitespaceLine().join("\n");
-
-                    this.currentError.raw += this.currentError.content;
-
-                    var lineNo = this.currentError.raw.match(/l\.([0-9]+)/);
-                    if (lineNo) {
-                        this.currentError.line = parseInt(lineNo[1], 10);
-                    }
-
-                    this.data.push(this.currentError);
-                    this.state = state.NORMAL;
-                }
+                this.parseLaTeXMsg()
+                    || this.parseTeXError()
+                    || this.parseVHbox()
+                    || this.parseParensForFilenames()
             }
-
             return this.postProcess(this.data);
-        };
+        }
 
-        this.currentLineIsError = function() {
-            return this.currentLine[0] == "!";
-        };
 
-        this.currentLineIsWarning = function() {
-            return !!(this.currentLine.match(LATEX_WARNING_REGEX));
-        };
-
-        this.currentLineIsBiberWarning = function () {
-            return !!(this.currentLine.match(BIBER_WARNING_REGEX));
-        };
-
-        this.currentLineIsNatbibWarning = function () {
-            return !!(this.currentLine.match(NATBIB_WARNING_REGEX));
-        };
-
-        this.currentLineIsHboxWarning = function() {
-            return !!(this.currentLine.match(HBOX_WARNING_REGEX));
-        };
-
-        this.parseSingleWarningLine = function(prefix_regex) {
-            var warningMatch = this.currentLine.match(prefix_regex);
-            if (!warningMatch) return;
-            var warning = warningMatch[1];
-
-            var lineMatch = warning.match(LINES_REGEX);
-            var line = lineMatch ? parseInt(lineMatch[1], 10) : null;
-
-            this.data.push({
-                line    : line,
-                file    : this.currentFilePath,
-                level   : "warning",
-                message : warning,
-                raw     : warning
-            });
-        };
-
-        this.parseBiberWarningLine = function() {
-            // Biber warnings are multiple lines, let's parse the first line
-            var warningMatch = this.currentLine.match(BIBER_WARNING_REGEX);
-            if (!warningMatch) return;  // Something strange happened, return early
-
-            // Now loop over the other output and just grab the message part
-            // Each line is prefiex with: (biblatex)
-            var warning_lines = [warningMatch[1]];
-            while (((this.currentLine = this.log.nextLine()) !== false) &&
-                (warningMatch = this.currentLine.match(/^\(biblatex\)[\s]+(.*)$/))) {
-                warning_lines.push(warningMatch[1])
+        // Catch LaTeX warning messages, output using \@latex@warning[@no@line]
+        // or \PackageWarning[NoLine] or \ClassWarning[NoLine] or \@font@warning
+        // Catch LaTeX error messages, output using \@latex@error
+        // or \PackageError or \ClassError,
+        // and using \MessageBreak for line break.        
+        this.parseLaTeXMsg = function() {
+            for (var i = 0 ; i < LATEX_MSG_REGEXES.length ; i++){
+                var reg_1st  = LATEX_MSG_REGEXES[i][0];
+                var matches = [];
+                if (matches = this.currentLine.match(reg_1st)) {
+                    var emitter = matches[1];
+                    var level   = matches[2];
+                    var msg     = matches[3];
+                    if (! this.newOutput && level == 'Error') {
+                        msg = emitter + ' ' + level + ': ' + msg;
+                    } else {
+                        msg = matches[3];
+                    }
+                    var reg_cont = LATEX_MSG_REGEXES[i][1];
+                    var follow =  this.log.linesUntilLineMatch(reg_cont).join(" ");
+                    if (follow)
+                        msg += " " + follow;
+                    var raw = matches[0] + " " + follow;
+                    var line = null;
+                    if (level === 'Warning') {
+                        var matchline = msg.match(LINES_WARNING_REGEX);
+                        line =  matchline ? parseInt(matchline[1], 10) : null;
+                    } else if (level === 'Error'){
+                        emsg = this._getErrMsg('latex');
+                        raw += " " + emsg;
+                        line = emsg[0];
+                    }
+                    this.data.push({
+                        line    : line,
+                        file    : this.currentFilePath,
+                        level   : level.toLowerCase(),
+                        emitter : emitter,
+                        message : msg,
+                        raw     : raw
+                    });
+                    return true;
+                }
             }
+            return false;
+        }
+       
+        // Catch what can be a TeX error
+        // e.g. a line begining with '! '
+        this.parseTeXError = function() {
+            var matches = null;
+            if (matches = this.currentLine.match(TEX_ERROR_REGEX)) {
+                var msg = matches[1];
+                var emitter = 'TeX';
+                var level   = 'error';
+                var emsg = this._getErrMsg('tex');
+                var raw = msg + "\n" + emsg[1];
+                    this.data.push({
+                        line    : emsg[0],
+                        file    : this.currentFilePath,
+                        level   : 'error',
+                        emitter : emitter,
+                        message : msg,
+                        raw     : raw
+                    });
+                return true;
+            }
+            return false;
+        }
 
-            var raw_message = warning_lines.join(' ');
-            this.data.push({
-                line    : null,  // Unfortunately, biber doesn't return a line number
-                file    : this.currentFilePath,
-                level   : "warning",
-                message : raw_message,
-                raw     : raw_message
-            });
-        };
-
-        this.parseHboxLine = function() {
-            var lineMatch = this.currentLine.match(LINES_REGEX);
-            var line = lineMatch ? parseInt(lineMatch[1], 10) : null;
-
-            this.data.push({
-                line    : line,
-                file    : this.currentFilePath,
-                level   : "typesetting",
-                message : this.currentLine,
-                raw     : this.currentLine
-            });
+        // (Under|Over) full (h|v)box 
+        this.parseVHbox = function() {
+            if (this.currentLine.match(HBOX_WARNING_REGEX)) {
+                var matchline = this.currentLine.match(LINES_WARNING_REGEX);
+                var line = matchline ? parseInt(matchline[1], 10) : null;
+                
+                this.data.push({
+                    line    : line,
+                    file    : this.currentFilePath,
+                    level   : "typesetting",
+                    emitter : 'latex',
+                    message : this.currentLine,
+                    raw     : this.currentLine
+                });
+                return true;
+            }
+            return false;
         };
 
         // Check if we're entering or leaving a new file in this line
         this.parseParensForFilenames = function() {
             var pos = this.currentLine.search(/\(|\)/);
-
             if (pos != -1) {
                 var token = this.currentLine[pos];
                 this.currentLine = this.currentLine.slice(pos + 1);
-
                 if (token == "(") {
                     var filePath = this.consumeFilePath();
                     if (filePath) {
                         this.currentFilePath = filePath;
-
                         var newFile = {
                             path : filePath,
                             files : []
@@ -243,11 +252,30 @@ define(function() {
                         // }
                     }
                 }
-
+                
                 // Process the rest of the line
                 this.parseParensForFilenames();
             }
-        };
+        }
+        
+        // return the msg until line error is found
+        // [line_no,msg]
+        this._getErrMsg = function(type) {
+            lines = this.log.linesUpToNextMatchingLine(LINES_ERROR_REGEX);
+            matchline = lines[lines.length-1].match(LINES_ERROR_REGEX);
+            var l = null;
+            if (matchline){
+                l = matchline[1];
+            }
+            var msg = lines.join("\n")
+                + "\n"
+                + this.log.linesUpToNextWhitespaceLine().join("\n");
+            if (type === 'latex'){
+                msg +=  "\n"
+                    + this.log.linesUpToNextWhitespaceLine().join("\n");
+            }
+            return  [l,msg];
+        }
 
         this.consumeFilePath = function() {
             // Our heuristic for detecting file names are rather crude
@@ -271,10 +299,11 @@ define(function() {
         };
 
         this.postProcess = function(data) {
-            var all         = [];
-            var errors      = [];
-            var warnings    = [];
-            var typesetting = [];
+            var all          = [];
+            var errors       = [];
+            var warnings     = [];
+            var typesetting  = [];
+            var missingfiles = [];
 
             var hashes = [];
 
@@ -293,12 +322,10 @@ define(function() {
                     typesetting.push(data[i]);
                 } else if (data[i].level == "warning") {
                     warnings.push(data[i]);
-                }
-
+                } 
                 all.push(data[i]);
                 hashes.push(hashEntry(data[i]));
             }
-
             return {
               errors      : errors,
               warnings    : warnings,

@@ -65,6 +65,13 @@ define [
 				.success (log) ->
 					$scope.pdf.rawLog = log
 					logEntries = LogParser.parse(log, ignoreDuplicates: true)
+					clear_sources = (entries) ->
+						for entry in entries
+							if (entry.file.slice 0, 8) == '/source/'
+								entry.file = entry.file.slice 8
+					clear_sources logEntries.errors
+					clear_sources logEntries.warnings
+					clear_sources logEntries.typesetting
 					$scope.pdf.logEntries = logEntries
 					$scope.pdf.logEntries.all = logEntries.errors.concat(logEntries.warnings).concat(logEntries.typesetting)
 
