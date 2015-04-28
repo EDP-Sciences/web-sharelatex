@@ -27,6 +27,8 @@ simplifyObjectData = (data) ->
       when (resolver_name.indexOf "VizieR") >= 0 then result.VizieR = getName resolver
       when (resolver_name.indexOf "NED") >= 0 then result.NED = getName resolver
       else result.unknown = resolver_name
+  if not (result.Simbad or result.VizieR or result.NED or result.unknown)
+    result.notfound = true
   return result
 
 module.exports =

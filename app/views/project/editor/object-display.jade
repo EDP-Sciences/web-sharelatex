@@ -16,3 +16,4 @@ script(type='text/ng-template', id='cdsObjectDisplayTemplate')
             span.name {{ object_data.name }}
             span.attribute(ng-repeat="(key, value) in object_data", ng-class="key" ng-if="key != 'name'").
                 found in {{key}} as {{value}}
+            span.attribute(ng-if="object_data.length == 0") not found at the CDS
