@@ -7,13 +7,14 @@ define [
 		link: (scope, elm, attrs, ctrl) ->
 			email_validator = ctrl.$validators.email
 
+			# From http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
 			is_valid_checksum = (orcid) ->
 				total = 0
 				for i in [0...18]
 					if i % 5 != 4
 						total = (total + parseInt orcid[i]) * 2
 				remainder = total % 11
-				result = 12 - remainder
+				result = (12 - remainder) % 11
 				if result == 10 then result = "X" else result = result.toString()
 				result == orcid[18]
 
