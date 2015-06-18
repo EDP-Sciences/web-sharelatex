@@ -2,10 +2,14 @@
    Created by xtrochu on 03/02/15.
 html
     head
-        script(language="text/javascript").
-            document.addEventListener('ready', function () {
+        script(src="#{jsPath}libs/jquery-1.11.1.min.js")
+        script(type="text/javascript").
+            function RedirectAndClose() {
                 window.opener.location.href = "#{redirect}";
-                self.close()
-            })
-    body.
-        Closing window...
+                self.close();
+            }
+    body
+        script(type="text/javascript").
+            $(RedirectAndClose);
+        div Closing window...
+            button(onclick="javascript:RedirectAndClose()") Close window

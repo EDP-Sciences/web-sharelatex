@@ -33,6 +33,7 @@ ChatController = require("./Features/Chat/ChatController")
 BlogController = require("./Features/Blog/BlogController")
 WikiController = require("./Features/Wiki/WikiController")
 Modules = require "./infrastructure/Modules"
+OrcidController = require "./Features/Authentication/OrcidController"
 RateLimiterMiddlewear = require('./Features/Security/RateLimiterMiddlewear')
 OrcidController = require "./Features/Authentication/OrcidController"
 

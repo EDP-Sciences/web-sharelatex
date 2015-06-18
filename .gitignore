@@ -32,6 +32,7 @@ Compiled source #
 ehthumbs.db
 Icon?
 Thumbs.db
+*~
 
 node_modules/*
 data/*
