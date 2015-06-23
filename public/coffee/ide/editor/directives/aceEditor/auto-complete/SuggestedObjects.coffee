@@ -1,6 +1,6 @@
 define [], () ->
-  $http = angular.module '$http'
   class SuggestedObjectsManager
+    constructor: (@$http) ->
     parseObjectDeclaration: (prefix) ->
       # if starts with \object
       # parse optionals and return everything after the first {
@@ -11,12 +11,12 @@ define [], () ->
 
     getSuggestions: (declaration, callback = (err, results) ->) ->
       # query CDS and generates a list based on that
-      $http.get 'http://simbad.u-strasbg.fr/tools/suggestNames/search?', params: {kw: declaration.object}
+      @$http.get 'http://simbad.u-strasbg.fr/tools/suggestNames/search?', params: {kw: declaration.object}
       .success (response) ->
         results = []
         response.data.forEach (item) ->
           results.push
-            type: "#{item.nbRef} refs"
+            meta: "#{item.nbRef} refs"
             value: "#{declaration.prefix}#{item.objName}}"
             score: item.nbRef
         callback null, results

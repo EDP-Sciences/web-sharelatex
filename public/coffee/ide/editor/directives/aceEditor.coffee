@@ -20,7 +20,7 @@ define [
 			url = ace.config._moduleUrl(args...) + "?fingerprint=#{window.aceFingerprint}"
 			return url
 
-	App.directive "aceEditor", ($timeout, $compile, $rootScope, event_tracking, localStorage) ->
+	App.directive "aceEditor", ($timeout, $compile, $rootScope, event_tracking, localStorage, $http) ->
 		monkeyPatchSearch($rootScope, $compile)
 
 		return  {
@@ -57,7 +57,7 @@ define [
 
 				scope.name = attrs.aceEditor
 
-				autoCompleteManager   = new AutoCompleteManager(scope, editor, element)
+				autoCompleteManager   = new AutoCompleteManager scope, editor, $http
 				spellCheckManager     = new SpellCheckManager(scope, editor, element)
 				undoManager           = new UndoManager(scope, editor, element)
 				highlightsManager     = new HighlightsManager(scope, editor, element)

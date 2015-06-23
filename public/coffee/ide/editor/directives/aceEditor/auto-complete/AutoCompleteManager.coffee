@@ -14,9 +14,9 @@ define [
 			return null
 
 	class AutoCompleteManager
-		constructor: (@$scope, @editor) ->
+		constructor: (@$scope, @editor, $http) ->
 			@suggestionManager = new SuggestionManager()
-			@suggestedObjects = new SuggestedObjects()
+			@suggestedObjects = new SuggestedObjects $http
 
 			@monkeyPatchAutocomplete()	
 
