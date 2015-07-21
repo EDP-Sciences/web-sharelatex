@@ -36,6 +36,7 @@ Modules = require "./infrastructure/Modules"
 OrcidController = require "./Features/Authentication/OrcidController"
 RateLimiterMiddlewear = require('./Features/Security/RateLimiterMiddlewear')
 OrcidController = require "./Features/Authentication/OrcidController"
+ObjectDisplayRouter = require "./Features/ObjectDisplay/ObjectDisplayRouter"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -67,6 +68,7 @@ module.exports = class Router
 		UploadsRouter.apply(app)
 		PasswordResetRouter.apply(app)
 		StaticPagesRouter.apply(app)
+		ObjectDisplayRouter.apply app
 
 		Modules.applyRouter(app)
 

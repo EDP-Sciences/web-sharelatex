@@ -263,6 +263,10 @@ module.exports =
 	# 	password: ""
 	# 	projectId: ""
 
+ ews:
+  object_display:
+    cds_url: "http://cdsweb.u-strasbg.fr/cgi-bin/nph-sesame/-ox/SNVA"
+
 	nav:
 		title: "ShareLaTeX Community Edition"
 		

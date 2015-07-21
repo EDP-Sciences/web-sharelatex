@@ -7,7 +7,9 @@ define [
 	"ide/editor/directives/aceEditor/spell-check/SpellCheckManager"
 	"ide/editor/directives/aceEditor/highlights/HighlightsManager"
 	"ide/editor/directives/aceEditor/cursor-position/CursorPositionManager"
-], (App, Ace, SearchBox, UndoManager, AutoCompleteManager, SpellCheckManager, HighlightsManager, CursorPositionManager) ->
+	"ide/editor/directives/aceEditor/object-display/ObjectDisplayManager"
+], (App, Ace, SearchBox, UndoManager, AutoCompleteManager, SpellCheckManager, HighlightsManager, CursorPositionManager,
+	  ObjectDisplayManager) ->
 	EditSession = ace.require('ace/edit_session').EditSession
 	
 	# Ace loads its script itself, so we need to hook in to be able to clear
@@ -18,7 +20,7 @@ define [
 			url = ace.config._moduleUrl(args...) + "?fingerprint=#{window.aceFingerprint}"
 			return url
 
-	App.directive "aceEditor", ($timeout, $compile, $rootScope, event_tracking, localStorage) ->
+	App.directive "aceEditor", ($timeout, $compile, $rootScope, event_tracking, localStorage, $http) ->
 		monkeyPatchSearch($rootScope, $compile)
 
 		return  {
@@ -36,6 +38,7 @@ define [
 				annotations: "="
 				navigateHighlights: "=",
 				onCtrlEnter: "="
+				objectDisplay: "="
 			}
 			link: (scope, element, attrs) ->
 				# Don't freak out if we're already in an apply callback
@@ -54,11 +57,12 @@ define [
 
 				scope.name = attrs.aceEditor
 
-				autoCompleteManager   = new AutoCompleteManager(scope, editor, element)
+				autoCompleteManager   = new AutoCompleteManager scope, editor, $http
 				spellCheckManager     = new SpellCheckManager(scope, editor, element)
 				undoManager           = new UndoManager(scope, editor, element)
 				highlightsManager     = new HighlightsManager(scope, editor, element)
 				cursorPositionManager = new CursorPositionManager(scope, editor, element, localStorage)
+				objectDisplayManager  = new ObjectDisplayManager scope, editor, element
 
 				# Prevert Ctrl|Cmd-S from triggering save dialog
 				editor.commands.addCommand
@@ -250,6 +254,14 @@ define [
 					>
 						{{ annotationLabel.text }}
 					</div>
+					<cds-object-display
+					  cds-value="cds.value"
+            cds-open="cds.open"
+            cds-left="cds.left"
+            cds-right="cds.right"
+            cds-top="cds.top"
+            cds-bottom="cds.bottom"
+					  />
 
 					<a
 						href

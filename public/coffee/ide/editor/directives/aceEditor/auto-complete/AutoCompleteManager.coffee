@@ -1,9 +1,10 @@
 define [
 	"ide/editor/directives/aceEditor/auto-complete/SuggestionManager"
 	"ide/editor/directives/aceEditor/auto-complete/Snippets"
+	"ide/editor/directives/aceEditor/auto-complete/SuggestedObjects"
 	"ace/ace"
 	"ace/ext-language_tools"
-], (SuggestionManager, Snippets) ->
+], (SuggestionManager, Snippets, SuggestedObjects) ->
 	Range = ace.require("ace/range").Range
 
 	getLastCommandFragment = (lineUpToCursor) ->
@@ -13,8 +14,9 @@ define [
 			return null
 
 	class AutoCompleteManager
-		constructor: (@$scope, @editor) ->
+		constructor: (@$scope, @editor, $http) ->
 			@suggestionManager = new SuggestionManager()
+			@suggestedObjects = new SuggestedObjects $http
 
 			@monkeyPatchAutocomplete()	
 
@@ -41,7 +43,7 @@ define [
 			SnippetCompleter =
 				getCompletions: (editor, session, pos, prefix, callback) ->
 					callback null, Snippets
-			@editor.completers = [@suggestionManager, SnippetCompleter]
+			@editor.completers = [@suggestionManager, SnippetCompleter, @suggestedObjects]
 
 		disable: () ->
 			@editor.setOptions({

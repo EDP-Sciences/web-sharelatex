@@ -1,0 +1,43 @@
+
+.cdsDisplayObjectOverlay {
+  position: relative;
+  display: none;
+  background: white url(/img/object-display/cds.png) no-repeat;
+  padding-left: 40px;
+  border: 1px solid darkviolet;
+  color: darkviolet;
+  z-index: 10;
+  pointer-events: none;
+  width: 360px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow:0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &.open {
+    display: block;
+  }
+
+  .content {
+    padding: 8px;
+    .name {
+      padding: 2px;
+      font-weight: bold;
+    }
+    .attribute {
+      padding: 2px;
+      &.simbad {
+        color: darkviolet;
+      }
+      &.vizier {
+        color: darkblue;
+      }
+      &.ned {
+        color: darkgreen;
+      }
+    }
+  }
+}
+
+.annotation.object-display {
+  border: 1px solid darkviolet;
+  border-radius: 1px;
+}

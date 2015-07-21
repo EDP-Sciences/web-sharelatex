@@ -223,6 +223,7 @@ module.exports = ProjectController =
 						fontSize : user.ace.fontSize
 						autoComplete: user.ace.autoComplete
 						pdfViewer : user.ace.pdfViewer
+						objectDisplay: if user.ace.objectDisplay then "true" else "false"
 					}
 					privilegeLevel: privilegeLevel
 					chatUrl: Settings.apis.chat.url
@@ -283,6 +284,7 @@ defaultSettingsForAnonymousUser = (user_id)->
 		autoComplete: true
 		spellCheckLanguage: ""
 		pdfViewer: ""
+		objectDisplay: false
 	subscription:
 		freeTrial:
 			allowed: true
