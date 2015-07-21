@@ -12,6 +12,13 @@ Settings = require "settings-sharelatex"
 xml2js = require "xml2js"
 isArray = require "isarray"
 
+require "../../models/Orcid"
+orcids = (require "../../infrastructure/mongojs").db.collection('orcid')
+
+acceptedOrcid: (orcid, callback = (error, orcid) ->) ->
+  orcids.findOne {orcid: orcid}, {}, callback
+
+
 auto_request = (options) ->
   if options.protocol == 'http:'
     return http.request options
@@ -64,12 +71,19 @@ module.exports = OrcidController =
     UserGetter.getUser {orcid: orcid}, (error, user) ->
       return (callback error) if error?
       return (callback null, user) if user?
-      if Settings.orcid?.disableOrcidRegistration? and
-        (!Settings.orcid?.acceptedOrcids? or orcid not in Settings.orcid.acceptedOrcids)
-          return callback()
-      UserCreator.createNewUser {orcid: orcid, holdingAccount: false}, (error, user) ->
-        return (callback error) if error?
-        callback null, user, true
+      if Settings.orcid?.disableOrcidRegistration?
+        acceptedOrcid orcid, (error, entry) ->
+          return (callback error) if error?
+          if not entry and
+            (!Settings.orcid?.acceptedOrcids? or orcid not in Settings.orcid.acceptedOrcids)
+              return callback()
+          UserCreator.createNewUser {orcid: orcid, holdingAccount: false}, (error, user) ->
+            return (callback error) if error?
+            callback null, user, true
+      else
+        UserCreator.createNewUser {orcid: orcid, holdingAccount: false}, (error, user) ->
+          return (callback error) if error?
+          callback null, user, true
 
   updateUserCredentials: (user, refresh_token, access_token, callback = (error) ->) ->
     UserUpdater.updateUser user._id.toString(),
