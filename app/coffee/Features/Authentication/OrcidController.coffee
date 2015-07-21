@@ -119,8 +119,8 @@ module.exports = OrcidController =
           callback()
 
   setLoginUrl: (req, res, next) ->
-    useOrcidLogin = res.locals.displayOrcidLogin = Settings?.orcid.useOrcidLogin
-    next() if not useOrcidLogin
+    useOrcidLogin = res.locals.displayOrcidLogin = Settings?.orcid?.useOrcidLogin
+    return next() if not useOrcidLogin
     url = Url.parse OrcidController.authorize_url
     url.query =
       client_id: OrcidController.client_id
