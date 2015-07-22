@@ -6,7 +6,7 @@ fs = require('fs')
 module.exports =
 
 	registerPage : (req, res)->
-		if Settings.orcid?.disableRegistration?
+		if Settings.orcid?.disableRegistration
 			return res.render 'orcid/no_register',
         disableOrcidRegistration: Settings.orcid.disableOrcidRegistration
 
