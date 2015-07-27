@@ -13,9 +13,9 @@ xml2js = require "xml2js"
 isArray = require "isarray"
 
 require "../../models/Orcid"
-orcids = (require "../../infrastructure/mongojs").db.collection('orcid')
+orcids = (require "../../infrastructure/mongojs").db.collection 'orcids'
 
-acceptedOrcid: (orcid, callback = (error, orcid) ->) ->
+acceptedOrcid = (orcid, callback = (error, orcid) ->) ->
   orcids.findOne {orcid: orcid}, {}, callback
 
 
