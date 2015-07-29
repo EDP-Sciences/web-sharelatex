@@ -62,6 +62,11 @@ ProjectSchema.statics.findAllUsersProjects = (user_id, requiredFields, callback)
 			this.find {readOnly_refs:user_id}, requiredFields, (err, readOnlyProjects)=>
 				callback(err, projects, collabertions, readOnlyProjects)
 
+ProjectSchema.statics.getProjectCounts = (user_id, callback) ->
+	this.find {owner_ref:user_id, archived: false}, null, (err, projects) ->
+		return callback err if err?
+		callback null, projects.length if projects else 0
+
 sanitizeTypeOfElement = (elementType)->
 	lastChar = elementType.slice -1
 	if lastChar != "s"

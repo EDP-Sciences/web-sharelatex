@@ -12,20 +12,28 @@ Path = require "path"
 _ = require "underscore"
 
 module.exports =
+	checkProjectLimit: (owner_id, callback) ->
+		User.findById owner_id, "ace.spellCheckLanguage", (err, user)->
+				return callback() if user.features.projectsLimit < 0
+				Project.getProjectCounts owner_id, (err, count) ->
+					return callback err in err?
+					callback if count >= user.features.projectsLimit then new Error "Too many active projects" else null
 	createBlankProject : (owner_id, projectName, callback = (error, project) ->)->
 		metrics.inc("project-creation")
 		logger.log owner_id:owner_id, projectName:projectName, "creating blank project"
-		rootFolder = new Folder {'name':'rootFolder'}
-		project = new Project
-			 owner_ref  : new ObjectId(owner_id)
-			 name       : projectName
-			 useClsi2   : true
-		project.rootFolder[0] = rootFolder
-		User.findById owner_id, "ace.spellCheckLanguage", (err, user)->
-			project.spellCheckLanguage = user.ace.spellCheckLanguage
-			project.save (err)->
-				return callback(err) if err?
-				callback err, project
+		@checkProjectLimit owner_id, (err) ->
+			return callback err if err?
+			rootFolder = new Folder {'name':'rootFolder'}
+			project = new Project
+				 owner_ref  : new ObjectId(owner_id)
+				 name       : projectName
+				 useClsi2   : true
+			project.rootFolder[0] = rootFolder
+			User.findById owner_id, "ace.spellCheckLanguage", (err, user)->
+				project.spellCheckLanguage = user.ace.spellCheckLanguage
+				project.save (err) ->
+					return callback err if err?
+					callback err, project
 
 	createBasicProject :  (owner_id, projectName, callback = (error, project) ->)->
 		self = @
