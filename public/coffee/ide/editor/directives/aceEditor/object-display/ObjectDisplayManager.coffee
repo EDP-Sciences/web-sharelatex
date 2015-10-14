@@ -41,15 +41,25 @@ define [
           content = iterator.stepForward()
           if !content
             continue
+          value = content.value
           start_row = iterator.getCurrentTokenRow()
           start_column = iterator.getCurrentTokenColumn()
           rparen = iterator.stepForward()
           if !rparen or !isrParen rparen
             continue
+          if lparen.value == "{[" and rparen.value == "]"
+            start_column -= 1
+            content = iterator.stepForward()  # Skip it and the following token (probably) }
+            if !content
+              continue
+            value = '[' + value + ']' + content.value
+            rparen = iterator.stepForward()
+            if !rparen or !isrParen rparen
+              continue
           end_row = iterator.getCurrentTokenRow()
           end_column = iterator.getCurrentTokenColumn()
           objects.push
-            value: content.value
+            value: value
             range: new Range start_row, start_column, end_row, end_column
         else
           iterator.stepForward()

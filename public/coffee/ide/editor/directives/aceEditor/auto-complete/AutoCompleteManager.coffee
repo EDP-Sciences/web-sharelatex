@@ -94,6 +94,7 @@ define [
 					exec: (editor) =>
 						if (!editor.completer)
 							editor.completer = new Autocomplete()
+							editor.completer.keyboardHandler.removeCommand 'Space'
 						editor.completer.autoInsert = false
 						editor.completer.autoSelect = true
 						editor.completer.showPopup(editor)

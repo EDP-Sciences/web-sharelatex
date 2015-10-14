@@ -4,11 +4,12 @@ http = require "http"
 xml2js = require "xml2js"
 isArray = require "isarray"
 
-getName = (entry) ->
-  if isArray entry?.oname
-    entry.oname[0]
-  else
-    entry?.oname
+getData = (entry) ->
+  name = if isArray entry?.oname then entry.oname[0] else entry?.oname
+  type = if isArray entry?.otype then entry.otype[0] else entry?.otype
+  position = if isArray entry?.jpos then entry.jpos[0] else entry?.jpos
+  if name
+    return name: name, type: type, position: position
 
 simplifyObjectData = (data) ->
   sesame = data?.Sesame
@@ -23,9 +24,9 @@ simplifyObjectData = (data) ->
   for resolver in (resolvers or [])
     resolver_name = resolver?.$?.name
     switch
-      when (resolver_name.indexOf "Simbad") >= 0 then result.Simbad = getName resolver
-      when (resolver_name.indexOf "VizieR") >= 0 then result.VizieR = getName resolver
-      when (resolver_name.indexOf "NED") >= 0 then result.NED = getName resolver
+      when (resolver_name.indexOf "Simbad") >= 0 then result.Simbad = getData resolver
+      when (resolver_name.indexOf "VizieR") >= 0 then result.VizieR = getData resolver
+      when (resolver_name.indexOf "NED") >= 0 then result.NED = getData resolver
       else result.unknown = resolver_name
   if not (result.Simbad or result.VizieR or result.NED or result.unknown)
     result.notfound = true
