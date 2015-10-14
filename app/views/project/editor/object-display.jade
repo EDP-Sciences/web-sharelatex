@@ -13,7 +13,9 @@ script(type='text/ng-template', id='cdsObjectDisplayTemplate')
             Searching object...
 
         .content(ng-show="object_data")
-            span.name {{ object_data.name }}
-            span.attribute(ng-repeat="(key, value) in object_data", ng-class="key" ng-if="key != 'name'").
-                found in {{key}} as {{value}}
-            span.attribute(ng-if="object_data.length == 0") not found at the CDS
+            .name {{ object_data.name }}
+            .found(ng-repeat="(key, value) in object_data", ng-class="key" ng-if="key != 'name'")
+                .name {{ value.name }}
+                .type(ng-if="value.type") {{ value.type }}
+                .position(ng-if="value.position") {{ value.position }}
+            .notfound(ng-if="object_data.notfound") Object not found at the CDS

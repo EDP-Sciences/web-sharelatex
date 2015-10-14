@@ -2,13 +2,15 @@
 .cdsDisplayObjectOverlay {
   position: relative;
   display: none;
-  background: white url(/img/object-display/cds.png) no-repeat;
+  background: url(/img/object-display/cds.png) no-repeat left 4px top 8px, white;
   padding-left: 40px;
   border: 1px solid darkviolet;
-  color: darkviolet;
   z-index: 10;
   pointer-events: none;
-  width: 360px;
+  font-size: 12px;
+  font-family: "Oxygen", sans-serif;
+  width: 270px;
+  box-sizing: border-box;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   -webkit-box-shadow:0 2px 4px rgba(0, 0, 0, 0.1);
 
@@ -17,21 +19,41 @@
   }
 
   .content {
-    padding: 8px;
+    padding: 2px;
     .name {
       padding: 2px;
       font-weight: bold;
+      font-size: larger;
     }
-    .attribute {
-      padding: 2px;
-      &.simbad {
-        color: darkviolet;
+    .found {
+      padding: 2px 2px 2px 64px;
+      div {
+        margin-left: .25em;
+        display: inline-block;
       }
-      &.vizier {
+      &.Simbad {
+        background: url(/img/object-display/simbad.png) no-repeat left center;
+      }
+      &.VizieR {
+        background: url(/img/object-display/vizier.png) no-repeat left center;
+      }
+      &.NED {
+        background: url(/img/object-display/ned.png) no-repeat left center;
+      }
+      .name {
+        font-weight: bold;
+      }
+      .type {
         color: darkblue;
+        &:before {
+          content: '[';
+        }
+        &:after {
+          content: ']';
+        }
       }
-      &.ned {
-        color: darkgreen;
+      .position {
+        font-size: smaller;
       }
     }
   }
