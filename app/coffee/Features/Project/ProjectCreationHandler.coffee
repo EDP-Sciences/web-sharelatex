@@ -55,8 +55,8 @@ module.exports =
 						ProjectEntityHandler.addDoc project._id, project.rootFolder[0]._id, "references.bib", docLines, (error, doc)->
 							callback(error)
 				(callback) ->
-					universePath = Path.resolve(__dirname + "/../../../templates/project_files/universe.jpg")
-					ProjectEntityHandler.addFile project._id, project.rootFolder[0]._id, "universe.jpg", universePath, callback
+					universePath = Path.resolve(__dirname + "/../../../templates/project_files/figure.pdf")
+					ProjectEntityHandler.addFile project._id, project.rootFolder[0]._id, "figure.pdf", universePath, callback
 			], (error) ->
 				callback(error, project)
 
