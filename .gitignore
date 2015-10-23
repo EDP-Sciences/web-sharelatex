@@ -50,7 +50,6 @@ public/js/history/versiondetail.js
 !public/js/libs/
 public/js/*
 !public/js/ace/*
-!public/js/libs/
 public/js/libs/sharejs.js
 public/js/editor.js
 public/js/home.js
@@ -59,6 +58,7 @@ public/js/gui.js
 public/js/admin.js
 public/js/history/*
 public/stylesheets/style.css
+public/stylesheets/login-page.css
 public/brand/plans.css
 public/minjs/
 

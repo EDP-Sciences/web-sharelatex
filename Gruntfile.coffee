@@ -70,6 +70,7 @@ module.exports = (grunt) ->
 			app:
 				files:
 					"public/stylesheets/style.css": "public/stylesheets/style.less"
+					"public/stylesheets/login-page.css": "public/stylesheets/components/login-page.less"
 
 		requirejs:
 			compile:

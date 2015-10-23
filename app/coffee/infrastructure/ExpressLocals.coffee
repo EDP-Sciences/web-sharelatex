@@ -29,7 +29,8 @@ for path in [
 	"#{jsPath}libs/pdfjs-1.0.712/pdf.js",
 	"#{jsPath}libs/pdfjs-1.0.712/pdf.worker.js",
 	"#{jsPath}libs/pdfjs-1.0.712/compatibility.js",
-	"/stylesheets/style.css"
+	"/stylesheets/style.css",
+	"/stylesheets/login-page.css"
 ]
 	filePath = Path.join __dirname, "../../../", "public#{path}"
 	exists = fs.existsSync filePath

@@ -1,5 +1,8 @@
 extends ../layout
 
+block scripts
+	link(rel='stylesheet', href='/stylesheets/login-page.css?fingerprint=' + fingerprint('/stylesheets/login-page.css'))
+
 block content
 	.content.content-alt
 		.container
@@ -23,7 +26,8 @@ block content
 										placeholder='email@example.com',
 										ng-model="email",
 										ng-model-options="{ updateOn: 'blur' }",
-										focus="true"
+										focus="true",
+										autocomplete="email"
 									)
 									span.small.text-primary(ng-show="loginForm.email.$invalid && loginForm.email.$dirty")
 										| #{translate("must_be_email_address")}
@@ -33,7 +37,8 @@ block content
 										name='password',
 										required,
 										placeholder='********',
-										ng-model="password"
+										ng-model="password",
+										autocomplete="current-password"
 									)
 									span.small.text-primary(ng-show="loginForm.password.$invalid && loginForm.password.$dirty")
 										| #{translate("required")}
@@ -45,3 +50,48 @@ block content
 										span(ng-show="!loginForm.inflight") #{translate("login")}
 										span(ng-show="loginForm.inflight") #{translate("logging_in")}...
 									a.pull-right(href='/user/password/reset') #{translate("forgot_your_password")}?
+
+
+	.circle
+		.cursor
+			h2 Work better and faster
+		#quarter1.quarter
+			.title
+				h2
+					img(src='img/login-page/latex.png', alt='LaTeX')
+					.subtitle Collaborative LaTeX solution
+			.text
+				p.
+					Work with your co-authors using a single version of your paper.
+					This solution uses ShareLaTeX© technology.
+		#quarter2.quarter
+			.title
+				h2
+					img(src='img/login-page/ellipses.png', alt='Stellar objects')
+					.subtitle Easier links to stellar objects
+			.text
+				p.
+					Get auto-completion for stellar objects and additional information
+					using tools developed with the CDS
+		#quarter3.quarter
+			.title
+				h2
+					img(src='img/login-page/chat.png', alt='Chat')
+					.subtitle Chat with your co-authors
+			.text
+				p Ask a question directly, chat and gain in efficiency
+		#quarter4.quarter
+			.title
+				h2
+					img(src='img/login-page/dropbox.png', alt='Dropbox')
+					.subtitle Dropbox integration
+			.text
+				p Edit your article offline and automatically sync it with your online copy with Dropbox.
+
+	script(type="text/javascript").
+		var $ = angular.element;
+		$(".quarter").bind('mouseenter', function() {
+			$(".cursor h2").addClass($(this).attr('id'));
+		}).bind('mouseleave', function() {
+			$(".cursor h2").removeClass($(this).attr('id'));
+		});
