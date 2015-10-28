@@ -49,8 +49,8 @@ module.exports = CompileManager =
 	getProjectCompileLimits: (project_id, callback = (error, limits) ->) ->
 		Project.findById project_id, {owner_ref: 1}, (error, project) ->
 			return callback(error) if error?
-			UserGetter.getUser project.owner_ref, {"features":1}, (err, owner)->
-				return callback(error) if error?
+			UserGetter.getUser project.owner_ref.toString(), {"features":1}, (err, owner)->
+				return callback(err) if err?
 				callback null, {
 					timeout: owner.features?.compileTimeout || Settings.defaultFeatures.compileTimeout
 					compileGroup: owner.features?.compileGroup || Settings.defaultFeatures.compileGroup
