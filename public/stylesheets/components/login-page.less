@@ -12,6 +12,17 @@ body {
   background-size: cover;
   min-height: 420px;
   margin-bottom: 20px;
+
+  .container .card {
+    padding-bottom: 12px;
+    border-radius: 3px 3px 0 0;
+
+    &:last-child {
+      padding-top: 0;
+      padding-bottom: 25px;
+      border-radius: 0 0 3px 3px;
+    }
+  }
 }
 
 @keyframes text-anim {

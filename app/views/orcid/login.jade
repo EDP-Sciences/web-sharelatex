@@ -90,6 +90,6 @@ script(type="text/javascript").
                 span(ng-show="loginForm.inflight") #{translate("logging_in")}...
             a.pull-right(href='/user/password/reset') #{translate("forgot_your_password")}?
     p#login-description !{translate("login_description")}
-.card(ng-cloak)
+.card
     a(ng-hide="show_direct_login", ng-click="show_direct_login = true", href="#") #{translate("direct_login")}
-    a(ng-show="show_direct_login", ng-click="show_direct_login = false", href="#") #{translate("orcid_login")}
+    a(ng-show="show_direct_login", ng-click="show_direct_login = false", href="#", ng-cloak) #{translate("orcid_login")}
