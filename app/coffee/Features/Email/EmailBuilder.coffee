@@ -44,7 +44,7 @@ templates.passwordResetRequested =
 	compiledTemplate: _.template """
 <h2>Password Reset</h2>
 <p>
-We got a request to reset your EDP Writing Studio password.
+We got a request to reset your #{settings.appName} password.
 <p>
 <center>
 	<div style="width:200px;background-color:#a93629;border:1px solid #e24b3b;border-radius:3px;padding:15px; margin:24px;">
@@ -64,7 +64,6 @@ If you didn't request a password reset, let us know.
 
 </p>
 <p>Thank you</p>
-<p> <a href="<%= siteUrl %>"> EDP Writing Studio </a></p>
 <p> <a href="<%= siteUrl %>">#{settings.appName}</a></p>
 """
 
