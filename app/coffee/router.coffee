@@ -52,7 +52,7 @@ module.exports = class Router
 		webRouter.get  '/login', OrcidController.setLoginUrl, UserPagesController.loginPage
 		AuthenticationController.addEndpointToLoginWhitelist '/login'
 
-			OrcidController.apply webRouter
+		OrcidController.apply webRouter
 
 		webRouter.post '/login', AuthenticationController.login
 		webRouter.get  '/logout', UserController.logout

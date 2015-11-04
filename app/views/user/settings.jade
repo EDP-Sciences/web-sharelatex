@@ -110,16 +110,11 @@ block content
 
 							hr
 
-<<<<<<< HEAD
-							p #{translate("need_to_leave")}
-								a(href, ng-click="deleteAccount()")  #{translate("delete_your_account")}
-=======
 							if !externalAuthenticationSystemUsed()
 
 								p.small
 									p #{translate("need_to_leave")} 
 										a(href, ng-click="deleteAccount()")  #{translate("delete_your_account")}
->>>>>>> master
 
 
 	script(type='text/ng-template', id='deleteAccountModalTemplate')
@@ -145,10 +140,6 @@ block content
 			)
 				span(ng-hide="state.inflight") #{translate("delete")}
 				span(ng-show="state.inflight") #{translate("deleting")}...
-<<<<<<< HEAD
-=======
-	
+
 	script(type='text/javascript').
 		window.passwordStrengthOptions = !{JSON.stringify(settings.passwordStrengthOptions || {})}
-
->>>>>>> master
