@@ -11,13 +11,15 @@ define [
 		$scope.onDrop = (events, ui) ->
 			source = $(ui.draggable).scope().entity
 			return if !source?
+			# clear highlight explicitely
+			$('.file-tree-inner .droppable-hover').removeClass('droppable-hover')
 			ide.fileTreeManager.moveEntity(source, $scope.entity)
 
 		$scope.orderByFoldersFirst = (entity) ->
 			# We need this here as well as in FileTreeController
 			# since the file-entity diretive creates a new scope
 			# that doesn't inherit from previous scopes.
-			return '0' if entity.type == "folder"
+			return '0' if entity?.type == "folder"
 			return '1'
 
 		$scope.openNewDocModal = () ->

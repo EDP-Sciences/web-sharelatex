@@ -171,8 +171,6 @@ define [
 					session = editor.getSession()
 					session.setUseWrapMode(true)
 					session.setMode("ace/mode/latex")
-					session.setAnnotations scope.annotations
-
 
 				updateCount = 0
 				onChange = () ->
@@ -194,6 +192,9 @@ define [
 						undoManager.nextUpdateIsRemote = true
 
 					sharejs_doc.attachToAce(editor)
+					# need to set annotations after attaching because attaching
+					# deletes and then inserts document content
+					session.setAnnotations scope.annotations
 
 					editor.focus()
 

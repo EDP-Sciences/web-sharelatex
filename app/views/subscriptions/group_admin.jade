@@ -5,7 +5,7 @@ block content
 		.container
 			.row
 				.col-md-10.col-md-offset-1
-					.card(ng-controller="GroupMembersController")
+					.card(ng-controller="SubscriptionGroupMembersController")
 						.page-header
 							.pull-right(ng-cloak)
 								small(ng-show="selectedUsers.length == 0") !{translate("you_have_added_x_of_group_size_y", {addedUsersSize:"<strong>{{ users.length }}</strong>", groupSize:"<strong>{{ groupSize }}</strong>"})}
@@ -35,7 +35,7 @@ block content
 											span.header #{translate("registered")}
 								li.container-fluid(
 									ng-repeat="user in users | orderBy:'email':true",
-									ng-controller="GroupMemberListItemController"
+									ng-controller="SubscriptionGroupMemberListItemController"
 								)
 									.row
 										.col-md-5
@@ -73,8 +73,10 @@ block content
 												ng-model="inputs.emails",
 												on-enter="addMembers()"
 											)
-										.col-xs-6
+										.col-xs-4
 											button.btn.btn-primary(ng-click="addMembers()") #{translate("add")}
+										.col-xs-2
+											a(href="/subscription/group/export") Export CSV
 
 	script(type="text/javascript").
 		window.users = !{JSON.stringify(users)};

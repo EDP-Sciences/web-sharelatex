@@ -98,7 +98,6 @@ describe "CompileController", ->
 
 		describe "when downloading for embedding", ->
 			beforeEach ->
-				@project.useClsi2 = true
 				@CompileController.proxyToClsi = sinon.stub()
 				@CompileController.downloadPdf(@req, @res, @next)
 
@@ -231,6 +230,20 @@ describe "CompileController", ->
 						)
 						.should.equal true
 
+			describe "user with build parameter via query string", ->
+				beforeEach ->
+					@CompileManager.getProjectCompileLimits = sinon.stub().callsArgWith(1, null, {compileGroup: "standard"})
+					@req.query = {build: 1234}
+					@CompileController.proxyToClsi(@project_id, @url = "/test", @req, @res, @next)
+
+				it "should proxy to the standard url without the build parameter", ()->
+					@request
+						.calledWith(
+							method: @req.method
+							url: "#{@settings.apis.clsi.url}#{@url}",
+							timeout: 60 * 1000
+						)
+						.should.equal true
 
 		describe "new pdf viewer", ->
 			beforeEach ->
@@ -281,13 +294,33 @@ describe "CompileController", ->
 						)
 						.should.equal true
 
+			describe "user with build parameter via query string", ->
+				beforeEach ->
+					@CompileManager.getProjectCompileLimits = sinon.stub().callsArgWith(1, null, {compileGroup: "standard"})
+					@req.query = {build: 1234, pdfng: true}
+					@CompileController.proxyToClsi(@project_id, @url = "/test", @req, @res, @next)
+
+				it "should proxy to the standard url with the build parameter", ()->
+					@request
+						.calledWith(
+							method: @req.method
+							qs: {build: 1234}
+							url: "#{@settings.apis.clsi.url}#{@url}",
+							timeout: 60 * 1000
+							headers: {
+								'Range': '123-456'
+								'If-Range': 'abcdef'
+								'If-Modified-Since': 'Mon, 15 Dec 2014 15:23:56 GMT'
+							}
+						)
+						.should.equal true
 
 	describe "deleteAuxFiles", ->
 		beforeEach ->
 			@CompileManager.deleteAuxFiles = sinon.stub().callsArg(1)
 			@req.params =
 				Project_id: @project_id
-			@res.send = sinon.stub()
+			@res.sendStatus = sinon.stub()
 			@CompileController.deleteAuxFiles @req, @res, @next
 
 		it "should proxy to the CLSI", ->
@@ -296,7 +329,7 @@ describe "CompileController", ->
 				.should.equal true
 
 		it "should return a 200", ->
-			@res.send
+			@res.sendStatus
 				.calledWith(200)
 				.should.equal true
 
@@ -319,3 +352,22 @@ describe "CompileController", ->
 			@CompileController.compileAndDownloadPdf @req, @res
 			@CompileController.proxyToClsi.calledWith(@project_id, "/project/#{@project_id}/output/output.pdf", @req, @res).should.equal true
 			done()
+
+	describe "wordCount", ->
+		beforeEach ->
+			@CompileManager.wordCount = sinon.stub().callsArgWith(2, null, {content:"body"})
+			@req.params =
+				Project_id: @project_id
+			@res.send = sinon.stub()
+			@res.contentType = sinon.stub()
+			@CompileController.wordCount @req, @res, @next
+
+		it "should proxy to the CLSI", ->
+			@CompileManager.wordCount
+				.calledWith(@project_id, false)
+				.should.equal true
+
+		it "should return a 200 and body", ->
+			@res.send
+				.calledWith({content:"body"})
+				.should.equal true

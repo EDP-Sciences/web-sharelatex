@@ -58,30 +58,16 @@ div.full-size.pdf(ng-controller="PdfController")
 				i.split-screen
 
 	.pdf-viewer(ng-show="pdf.url && pdf.view == 'pdf' && !pdf.failure && !pdf.timeout && !pdf.error")
-		- // user.featureSwitches = {} // override
-		- var usePdfNG = user.featureSwitches && user.featureSwitches.pdfng;
-		if !usePdfNG
-			div(
-				pdfjs
-				ng-if="settings.pdfViewer == 'pdfjs'"
-				pdf-src="pdf.url"
-				key="{{ project_id }}"
-				resize-on="layout:main:resize,layout:pdf:resize"
-				highlights="pdf.highlights"
-				position="pdf.position"
-				dbl-click-callback="syncToCode"
-			)
-		else
-			div(
-				pdfng
-				ng-if="settings.pdfViewer == 'pdfjs'"
-				pdf-src="pdf.url"
-				key="{{ project_id }}"
-				resize-on="layout:main:resize,layout:pdf:resize"
-				highlights="pdf.highlights"
-				position="pdf.position"
-				dbl-click-callback="syncToCode"
-			)
+		div(
+			pdfng
+			ng-if="settings.pdfViewer == 'pdfjs'"
+			pdf-src="pdf.url"
+			key="{{ project_id }}"
+			resize-on="layout:main:resize,layout:pdf:resize"
+			highlights="pdf.highlights"
+			position="pdf.position"
+			dbl-click-callback="syncToCode"
+		)
 
 		iframe(
 			ng-src="{{ pdf.url }}"
@@ -114,7 +100,7 @@ div.full-size.pdf(ng-controller="PdfController")
 					p
 						a.btn.btn-info(
 							href
-							ng-click="hello('compile-timeout')"
+							ng-click="startFreeTrial('compile-timeout')"
 						) #{translate("start_free_trial")}
 
 	.pdf-errors(ng-show="pdf.projectTooLarge")
@@ -162,19 +148,18 @@ div.full-size.pdf(ng-controller="PdfController")
 				)
 					i.fa.fa-trash-o
 				| &nbsp;
-				div.dropdown(style="display: inline-block;")
+				div.dropdown(style="display: inline-block;", dropdown)
 					a.btn.btn-default.btn-sm(
 						href
 						dropdown-toggle
 					)
-						| !{translate("other_logs_and_files")}
+						| !{translate("other_logs_and_files")} 
 						span.caret
 					ul.dropdown-menu.dropdown-menu-right
 						li(ng-repeat="file in pdf.outputFiles")
 							a(
 								href="/project/{{project_id}}/output/{{file.path}}"
 								target="_blank"
-								ng-click="openOutputFile(file)"
 							) {{ file.name }}
 			a.btn.btn-info.btn-sm(href, ng-click="toggleRawLog()")
 				span(ng-show="!pdf.showRawLog") #{translate("view_raw_logs")}
