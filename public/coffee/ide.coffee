@@ -13,6 +13,7 @@ define [
 	"ide/chat/index"
 	"ide/clone/index"
 	"ide/hotkeys/index"
+	"ide/wordcount/index"
 	"ide/directives/layout"
 	"ide/services/ide"
 	"__IDE_CLIENTSIDE_INCLUDES__"
@@ -24,7 +25,7 @@ define [
 	"directives/stopPropagation"
 	"directives/rightClick"
 	"filters/formatDate"
-	"main/event-tracking"
+	"main/event"
 	"main/account-upgrade"
 ], (
 	App
@@ -51,6 +52,7 @@ define [
 		$scope.state = {
 			loading: true
 			load_progress: 40
+			error: null
 		}
 		$scope.ui = {
 			leftMenuShown: false
@@ -83,7 +85,7 @@ define [
 		$scope.$on "project:joined", () ->
 			return if inited
 			inited = true
-			if $scope.project.deletedByExternalDataSource
+			if $scope?.project?.deletedByExternalDataSource
 				ide.showGenericMessageModal("Project Renamed or Deleted", """
 					This project has either been renamed or deleted by an external data source such as Dropbox.
 					We don't want to delete your data on ShareLaTeX, so this project still contains your history and collaborators.

@@ -57,7 +57,6 @@ UserSchema = new Schema
 	orcid_refresh_token: {type : String, default : ''}
 	orcid_access_token: {type : String, default : ''}
 
-
 UserSchema.statics.getAllIds = (callback)->
 	this.find {}, ["first_name"], callback
 

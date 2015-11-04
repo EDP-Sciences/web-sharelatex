@@ -45,6 +45,7 @@ cookies.txt
 requestQueueWorker.js
 TpdsWorker.js
 BackgroundJobsWorker.js
+UserAndProjectPopulator.coffee
 
 public/js/history/versiondetail.js
 !public/js/libs/

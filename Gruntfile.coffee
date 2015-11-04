@@ -9,7 +9,10 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-contrib-requirejs'
 	grunt.loadNpmTasks 'grunt-execute'
 	grunt.loadNpmTasks 'grunt-bunyan'
-	
+	grunt.loadNpmTasks 'grunt-sed'
+	grunt.loadNpmTasks 'grunt-git-rev-parse'
+	grunt.loadNpmTasks 'grunt-file-append'
+
 	config =
 		execute:
 			app:
@@ -86,11 +89,10 @@ module.exports = (grunt) ->
 					paths:
 						"moment": "libs/moment-2.9.0"
 						"mathjax": "/js/libs/mathjax/MathJax.js?config=TeX-AMS_HTML"
+						"libs/pdf": "libs/pdfjs-1.0.1040/pdf"
 					shim:
-						"libs/pdfListView/PdfListView":
-							deps: ["libs/pdf"]
 						"libs/pdf":
-							deps: ["libs/compatibility"]
+							deps: ["libs/pdfjs-1.0.1040/compatibility"]
 
 					skipDirOptimize: true
 					modules: [
@@ -124,6 +126,28 @@ module.exports = (grunt) ->
 					reporter: grunt.option('reporter') or 'spec'
 					grep: grunt.option("grep")
 
+		"git-rev-parse":
+			version:
+				options:
+					prop: 'commit'
+
+
+		file_append:
+			default_options: files: [ {
+				append: '\n//ide.js is complete - used for automated testing'
+				input: 'public/minjs/ide.js'
+				output: 'public/minjs/ide.js'
+			}]
+
+		sed:
+			version:
+				path: "app/views/sentry.jade"
+				pattern: '@@COMMIT@@',
+				replacement: '<%= commit %>',
+			release:
+				path: "app/views/sentry.jade"
+				pattern: "@@RELEASE@@"
+				replacement: process.env.BUILD_NUMBER || "(unknown build)"
 
 		availabletasks:
 			tasks:
@@ -258,7 +282,7 @@ module.exports = (grunt) ->
 	grunt.registerTask 'compile:server', 'Compile the server side coffee script', ['clean:app', 'coffee:app', 'coffee:app_dir', 'compile:modules:server']
 	grunt.registerTask 'compile:client', 'Compile the client side coffee script', ['coffee:client', 'coffee:sharejs', 'wrap_sharejs', "compile:modules:client", 'compile:modules:inject_clientside_includes']
 	grunt.registerTask 'compile:css', 'Compile the less files to css', ['less']
-	grunt.registerTask 'compile:minify', 'Concat and minify the client side js', ['requirejs']
+	grunt.registerTask 'compile:minify', 'Concat and minify the client side js', ['requirejs', "file_append"]
 	grunt.registerTask 'compile:unit_tests', 'Compile the unit tests', ['clean:unit_tests', 'coffee:unit_tests']
 	grunt.registerTask 'compile:smoke_tests', 'Compile the smoke tests', ['coffee:smoke_tests']
 	grunt.registerTask 'compile:tests', 'Compile all the tests', ['compile:smoke_tests', 'compile:unit_tests']
@@ -266,7 +290,7 @@ module.exports = (grunt) ->
 
 	grunt.registerTask 'install', "Compile everything when installing as an npm module", ['compile']
 
-	grunt.registerTask 'test:unit', 'Run the unit tests (use --grep=<regex> or --feature=<feature> for individual tests)', ['compile:server', 'compile:unit_tests', 'mochaTest:unit']
+	grunt.registerTask 'test:unit', 'Run the unit tests (use --grep=<regex> or --feature=<feature> for individual tests)', ['compile:server', 'compile:modules:server', 'compile:unit_tests', 'compile:modules:unit_tests', 'mochaTest:unit'].concat(moduleUnitTestTasks)
 	grunt.registerTask 'test:smoke', 'Run the smoke tests', ['compile:smoke_tests', 'mochaTest:smoke']
 	
 	grunt.registerTask 'test:modules:unit', 'Run the unit tests for the modules', ['compile:modules:server', 'compile:modules:unit_tests'].concat(moduleUnitTestTasks)
@@ -274,3 +298,38 @@ module.exports = (grunt) ->
 	grunt.registerTask 'run', "Compile and run the web-sharelatex server", ['compile', 'bunyan', 'execute']
 	grunt.registerTask 'default', 'run'
 
+	grunt.registerTask 'version', "Write the version number into sentry.jade", ['git-rev-parse', 'sed']
+	
+	grunt.registerTask 'create-admin-user', "Create a user with the given email address and make them an admin. Update in place if the user already exists", () ->
+		done = @async()
+		email = grunt.option("email")
+		if !email?
+			console.error "Usage: grunt create-admin-user --email joe@example.com"
+			process.exit(1)
+
+		settings = require "settings-sharelatex"
+		UserRegistrationHandler = require "./app/js/Features/User/UserRegistrationHandler"
+		OneTimeTokenHandler = require "./app/js/Features/Security/OneTimeTokenHandler"
+		UserRegistrationHandler.registerNewUser {
+			email: email
+			password: require("crypto").randomBytes(32).toString("hex")
+		}, (error, user) ->
+			if error? and error?.message != "EmailAlreadyRegistered"
+				throw error
+			user.isAdmin = true
+			user.save (error) ->
+				throw error if error?
+				ONE_WEEK = 7 * 24 * 60 * 60 # seconds
+				OneTimeTokenHandler.getNewToken user._id, { expiresIn: ONE_WEEK }, (err, token)->
+					return next(err) if err?
+					
+					console.log ""
+					console.log """
+						Successfully created #{email} as an admin user.
+						
+						Please visit the following URL to set a password for #{email} and log in:
+						
+							#{settings.siteUrl}/user/password/set?passwordResetToken=#{token}
+						
+					"""
+					done()

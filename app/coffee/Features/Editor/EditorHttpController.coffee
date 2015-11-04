@@ -49,7 +49,7 @@ module.exports = EditorHttpController =
 		name = req.body.name
 
 		if !name?
-			return res.send 400 # Malformed request
+			return res.sendStatus 400 # Malformed request
 
 		logger.log project_id: project_id, doc_id: doc_id, "restoring doc"
 		ProjectEntityHandler.restoreDoc project_id, doc_id, name, (err, doc, folder_id) =>
@@ -59,11 +59,16 @@ module.exports = EditorHttpController =
 				doc_id: doc._id
 			}
 
+	_nameIsAcceptableLength: (name)->
+		return name? and name.length < 150 and name.length != 0
+
 
 	addDoc: (req, res, next) ->
 		project_id = req.params.Project_id
 		name = req.body.name
 		parent_folder_id = req.body.parent_folder_id
+		if !EditorHttpController._nameIsAcceptableLength(name)
+			return res.sendStatus 400
 		EditorController.addDoc project_id, parent_folder_id, name, [], "editor", (error, doc) ->
 			return next(error) if error?
 			res.json doc
@@ -72,6 +77,8 @@ module.exports = EditorHttpController =
 		project_id = req.params.Project_id
 		name = req.body.name
 		parent_folder_id = req.body.parent_folder_id
+		if !EditorHttpController._nameIsAcceptableLength(name)
+			return res.sendStatus 400
 		EditorController.addFolder project_id, parent_folder_id, name, "editor", (error, doc) ->
 			return next(error) if error?
 			res.json doc
@@ -81,11 +88,11 @@ module.exports = EditorHttpController =
 		entity_id   = req.params.entity_id
 		entity_type = req.params.entity_type
 		name = req.body.name
-		if name.length > 150
-			return res.send 400
+		if !EditorHttpController._nameIsAcceptableLength(name)
+			return res.sendStatus 400
 		EditorController.renameEntity project_id, entity_id, entity_type, name, (error) ->
 			return next(error) if error?
-			res.send 204
+			res.sendStatus 204
 
 	moveEntity: (req, res, next) ->
 		project_id  = req.params.Project_id
@@ -94,7 +101,7 @@ module.exports = EditorHttpController =
 		folder_id = req.body.folder_id
 		EditorController.moveEntity project_id, entity_id, folder_id, entity_type, (error) ->
 			return next(error) if error?
-			res.send 204
+			res.sendStatus 204
 
 	deleteDoc: (req, res, next)->
 		req.params.entity_type  = "doc"
@@ -114,6 +121,6 @@ module.exports = EditorHttpController =
 		entity_type = req.params.entity_type
 		EditorController.deleteEntity project_id, entity_id, entity_type, "editor", (error) ->
 			return next(error) if error?
-			res.send 204
+			res.sendStatus 204
 
 

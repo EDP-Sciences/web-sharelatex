@@ -1,7 +1,8 @@
-.dropdown
+.dropdown(dropdown)
 	a.btn.btn-primary.dropdown-toggle(
 		href="#",
-		data-toggle="dropdown"
+		data-toggle="dropdown",
+		dropdown-toggle
 	)
 		| #{translate("new_project")}
 
@@ -21,7 +22,7 @@
 				href,
 				ng-click="openUploadProjectModal()"
 			) #{translate("upload_project")}
-		!{moduleIncludes("newProjectMenu", locals)}
+		!= moduleIncludes("newProjectMenu", locals)
 		if (templates)
 			li.divider
 			li.dropdown-header #{translate("templates")}
@@ -70,19 +71,53 @@
 			strong #{translate("create_your_first_project")}
 
 - if (showUserDetailsArea)
-	.row-spaced#userProfileInformation(ng-if="projects.length > 0", ng-cloak)
-		div(ng-controller="UserProfileController")
-			hr(ng-show="percentComplete < 100")
-			.text-centered.user-profile(ng-show="percentComplete < 100")
-				.progress
-					.progress-bar.progress-bar-info(ng-style="{'width' : (percentComplete+'%')}")
+	- if (Math.random() < 0.5)
+		.row-spaced
+			hr
+			.card.card-thin(ng-cloak)
+				span(sixpack-switch="datajoy_promo_button")
+					span(sixpack-default)
+						p.text-center.small
+							| <strong>Python</strong> or <strong>R</strong> user?
+							p.text-center.small
+								a(sixpack-convert="datajoy_promo_button", href="https://www.getdatajoy.com/", target="_blank").btn.btn-info.btn-small Try DataJoy
+						p.text-center.small(style="font-size: 0.8em")
+							a(href="https://www.getdatajoy.com/", target="_blank") DataJoy
+							|  is a new online Python and R editor from ShareLaTeX.
 
-				p.small #{translate("profile_complete_percentage", {percentval:"{{percentComplete}}"})}
-				
-				button#completeUserProfileInformation.btn.btn-info(
-					ng-hide="formVisable",
-					ng-click="openUserProfileModal()"
-				) #{translate("complete")}
+					span(sixpack-when="learning")
+						p.text-center.small
+							| Learning <strong>Python</strong>?
+							p.text-center.small
+								a(sixpack-convert="datajoy_promo_button", href="https://www.getdatajoy.com/", target="_blank").btn.btn-info.btn-small Try DataJoy
+						p.text-center.small(style="font-size: 0.8em")
+							a(href="https://www.getdatajoy.com/", target="_blank") DataJoy
+							|  is the easiest editor to use when learning Python.
+							
+
+					span(sixpack-when="try-now")
+						p.text-center.small
+							| <strong>Python</strong> or <strong>R</strong> user?
+							p.text-center.small
+								a(sixpack-convert="datajoy_promo_button", href="https://www.getdatajoy.com/", target="_blank").btn.btn-info.btn-small Try Now
+
+						p.text-center.small(style="font-size: 0.8em")
+							a(href="https://www.getdatajoy.com/", target="_blank") DataJoy 
+							| lets work with Python & R in the browser.
+	- else
+		.row-spaced#userProfileInformation(ng-if="projects.length > 0", ng-cloak)
+			div(ng-controller="UserProfileController")
+				hr(ng-show="percentComplete < 100")
+				.text-centered.user-profile(ng-show="percentComplete < 100")
+					.progress
+						.progress-bar.progress-bar-info(ng-style="{'width' : (percentComplete+'%')}")
+
+					p.small #{translate("profile_complete_percentage", {percentval:"{{percentComplete}}"})}
+					
+					button#completeUserProfileInformation.btn.btn-info(
+						ng-hide="formVisable",
+						ng-click="openUserProfileModal()"
+					) #{translate("complete")}
 
 -if (settings.enableSubscriptions && !hasSubscription)
 	.row-spaced(ng-if="projects.length > 0", ng-cloak).text-centered

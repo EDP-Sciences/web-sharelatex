@@ -100,17 +100,13 @@ module.exports =
 			subdomain: ""
 		geoIpLookup:
 			url: "http://localhost:8080/json"
+		realTime:
+			url: "http://localhost:3026"
 			
 	templates:
 		user_id: process.env.TEMPLATES_USER_ID or "5395eb7aad1f29a88756c7f2"
-		
-	# The websocket layer of ShareLaTeX runs as separate service.
-	# When running locally or in development, you can point the client to this
-	# service directly. If you are running behind a reverse proxy (Nginx, etc)
-	# then websocketsUrl should be the same as siteUrl, with your reverse
-	# proxy responible for sending websocket traffic to the websocket service
-	# rather than connecting directly.
-	websocketsUrl: "http://localhost:3026"
+		showSocialButtons: false
+		showComments: false
 
 	# Where your instance of ShareLaTeX can be found publically. Used in emails
 	# that are sent out, generated links, etc.
@@ -169,6 +165,17 @@ module.exports =
 		{name: "French", code: "fr"}
 	]
 
+
+	# Password Settings
+	# -----------
+	# These restrict the passwords users can use when registering
+	# opts are from http://antelle.github.io/passfield
+	# passwordStrengthOptions:
+	# 	pattern: "aA$3"
+	# 	length:
+	# 		min: 8
+	# 		max: 50
+
 	# Email support
 	# -------------
 	#
@@ -209,7 +216,7 @@ module.exports =
 	#   publicDSN: ""
 	#
 	# src should be either a remote url like
-	#    //cdn.ravenjs.com/1.1.16/jquery,native/raven.min.js
+	#    //cdn.ravenjs.com/1.1.22/jquery,native/raven.min.js
 	# or a local file in the js/libs directory.
 	# The publicDSN is the token for the client-side getSentry service.
 
@@ -233,6 +240,13 @@ module.exports =
 	# then set this to true to allow it to correctly detect the forwarded IP
 	# address and http/https protocol information.
 	behindProxy: false
+	
+	# Cookie max age (in milliseconds). Set to false for a browser session.
+	cookieSessionLength: 5 * 24 * 60 * 60 * 1000 # 5 days
+	
+	# Should we allow access to any page without logging in? This includes
+	# public projects, /learn, /templates, about pages, etc.
+	allowPublicAccess: false
 
 	# Internal configs
 	# ----------------
@@ -262,6 +276,9 @@ module.exports =
 	# 	user: ""
 	# 	password: ""
 	# 	projectId: ""
+	
+	appName: "ShareLaTeX (Community Edition)"
+	adminEmail: "placeholder@example.com"
 
  ews:
   object_display:
@@ -271,9 +288,9 @@ module.exports =
 		title: "ShareLaTeX Community Edition"
 		
 		left_footer: [{
-			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2014"
+			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2015"
 		}, {
-			text: "Modified by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2014-2015"
+			text: "Modified by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2015"
 		}]
 
 		right_footer: [{
@@ -337,3 +354,36 @@ module.exports =
 	proxyUrls: {}
 	
 	reloadModuleViewsOnEachRequest: true
+
+	domainLicences: [
+		
+	]
+
+	sixpack:
+		domain:"http://45.79.157.156:5000"
+	# ShareLaTeX Server Pro options (https://www.sharelatex.com/university/onsite.html)
+	# ----------
+
+
+	# username = einstein
+	# password = password
+	# ldap :
+	# 	host: 'ldap://ldap.forumsys.com'
+	# 	dn: 'uid=:userKey,dc=example,dc=com'
+	# 	baseSearch: 'dc=example,dc=com'
+	# 	filter: "(uid=:userKey)"
+	# 	failMessage: 'LDAP User Fail'
+	# 	fieldName: 'LDAP User'
+	# 	placeholder: 'LDAP User ID'
+	# 	emailAtt: 'mail'
+	# 	anonymous: false
+	
+	#templateLinks: [{
+	#	name : "CV projects",
+	#	url : "/templates/cv"
+	#},{
+	#	name : "all projects",
+	#	url: "/templates/all"
+	#}]
+
+

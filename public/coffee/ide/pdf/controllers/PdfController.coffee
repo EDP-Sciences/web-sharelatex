@@ -41,16 +41,28 @@ define [
 				$scope.pdf.failure = true
 				fetchLogs()
 			else if response.status == "success"
+				# define the base url
+				$scope.pdf.url = "/project/#{$scope.project_id}/output/output.pdf?cache_bust=#{Date.now()}"
+				# add a query string parameter for the compile group
 				if response.compileGroup?
 					$scope.pdf.compileGroup = response.compileGroup
-					$scope.pdf.url = "/project/#{$scope.project_id}/output/output.pdf?cache_bust=#{Date.now()}" +
-						"&compileGroup=#{$scope.pdf.compileGroup}"
-				else
-					$scope.pdf.url = "/project/#{$scope.project_id}/output/output.pdf?cache_bust=#{Date.now()}"
-				fetchLogs()
+					$scope.pdf.url = $scope.pdf.url + "&compileGroup=#{$scope.pdf.compileGroup}"
+				# make a cache to look up files by name
+				fileByPath = {}
+				for file in response.outputFiles
+					fileByPath[file.path] = file
+				# if the pdf file has a build number, pass it to the clsi
+				if fileByPath['output.pdf']?.build?
+					build = fileByPath['output.pdf'].build
+					$scope.pdf.url = $scope.pdf.url + "&build=#{build}"
+
+				fetchLogs(fileByPath['output.log'])
 
 			IGNORE_FILES = ["output.fls", "output.fdb_latexmk"]
 			$scope.pdf.outputFiles = []
+
+			if !response.outputFiles?
+				return
 			for file in response.outputFiles
 				if IGNORE_FILES.indexOf(file.path) == -1
 					# Turn 'output.blg' into 'blg file'.
@@ -60,8 +72,9 @@ define [
 						file.name = file.path
 					$scope.pdf.outputFiles.push file
 
-		fetchLogs = () ->
-			$http.get "/project/#{$scope.project_id}/output/output.log"
+		fetchLogs = (outputFile) ->
+			qs = if outputFile?.build? then "?build=#{outputFile.build}" else ""
+			$http.get "/project/#{$scope.project_id}/output/output.log" + qs
 				.success (log) ->
 					$scope.pdf.rawLog = log
 					logEntries = LogParser.parse(log, ignoreDuplicates: true)
@@ -112,17 +125,11 @@ define [
 
 			return path
 
-		compileCount = 0
 		$scope.recompile = (options = {}) ->
 			return if $scope.pdf.compiling
 			$scope.pdf.compiling = true
 			
-			if !options.isAutoCompile
-				compileCount++
-				if compileCount == 1
-					event_tracking.send('editor-interaction', 'single-compile')
-				else if compileCount == 3
-					event_tracking.send('editor-interaction', 'multi-compile')
+			ide.$scope.$broadcast("flush-changes")
 
 			options.rootDocOverride_id = getRootDocOverride_id()
 
@@ -158,9 +165,6 @@ define [
 		$scope.toggleRawLog = () ->
 			$scope.pdf.showRawLog = !$scope.pdf.showRawLog
 
-		$scope.openOutputFile = (file) ->
-			window.open("/project/#{$scope.project_id}/output/#{file.path}")
-
 		$scope.openClearCacheModal = () ->
 			modalInstance = $modal.open(
 				templateUrl: "clearCacheModalTemplate"
@@ -190,6 +194,11 @@ define [
 			$scope.switchToFlatLayout() if pdfLayout == "flat"
 		else
 			$scope.switchToSideBySideLayout()
+
+		$scope.startFreeTrial = (source) ->
+			ga?('send', 'event', 'subscription-funnel', 'compile-timeout', source)
+			window.open("/user/subscription/new?planCode=student_free_trial_7_days")
+			$scope.startedFreeTrial = true
 
 	App.factory "synctex", ["ide", "$http", "$q", (ide, $http, $q) ->
 		synctex =

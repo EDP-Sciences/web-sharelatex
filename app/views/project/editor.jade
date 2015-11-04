@@ -13,6 +13,9 @@ block content
 				h3 #{translate("loading")}...
 				.progress
 					.progress-bar(style="width: 20%", ng-style="{'width': state.load_progress + '%'}")
+				p.text-center.text-danger(ng-if="state.error").ng-cloak 
+					span(ng-bind-html="state.error")
+
 
 		.global-alerts(ng-cloak)
 			.alert.alert-danger.small(ng-if="connection.forced_disconnect")
@@ -21,14 +24,17 @@ block content
 
 			.alert.alert-warning.small(ng-if="connection.reconnection_countdown")
 				strong #{translate("lost_connection")}.
-				|  #{translate("reconnecting_in_x_secs", {seconds:"{{ connection.reconnection_countdown }}"})}.
-				a.pull-right.alert-link(href, ng-click="tryReconnectNow()") #{translate("try_now")}
+				| #{translate("reconnecting_in_x_secs", {seconds:"{{ connection.reconnection_countdown }}"})}.
+				a#try-reconnect-now-button.pull-right.alert-link(href, ng-click="tryReconnectNow()") #{translate("try_now")}
 
 			.alert.alert-warning.small(ng-if="connection.reconnecting")
 				strong #{translate("reconnecting")}...
 
+			.alert.alert-warning.small(ng-if="connection.inactive_disconnect")
+				strong #{translate("editor_disconected_click_to_reconnect")}
+
 			.div(ng-controller="SavingNotificationController")
-				.alert.alert-warning.small( ng-repeat="(doc_id, state) in docSavingStatus" ng-if="state.unsavedSeconds > 3") #{translate("saving_notification_with_seconds", {docname:"{{ state.doc.name }}", seconds:"{{ state.unsavedSeconds }}"})}
+				.alert.alert-warning.small(ng-repeat="(doc_id, state) in docSavingStatus" ng-if="state.unsavedSeconds > 8") #{translate("saving_notification_with_seconds", {docname:"{{ state.doc.name }}", seconds:"{{ state.unsavedSeconds }}"})}
 
 		include ./editor/left-menu
 
@@ -74,13 +80,12 @@ block content
 		.modal-footer
 			button.btn.btn-info(ng-click="done()") #{translate("ok")}
 
-	script(src='#{settings.websocketsUrl}/socket.io/socket.io.js')
+	script(src='/socket.io/socket.io.js')
 
 	//- We need to do .replace(/\//g, '\\/') do that '</script>' -> '<\/script>'
 	//- and doesn't prematurely end the script tag.
 	script(type='text/javascript').
 		window.project_id = "!{project_id}";
-		window.websocketsUrl = "!{settings.websocketsUrl}";
 		window.userSettings = !{JSON.stringify(userSettings).replace(/\//g, '\\/')};
 		window.user = !{JSON.stringify(user).replace(/\//g, '\\/')};
 		window.csrfToken = "!{csrfToken}";
@@ -88,16 +93,14 @@ block content
 		window.requirejs = {
 			"paths" : {
 				"mathjax": "/js/libs/mathjax/MathJax.js?config=TeX-AMS_HTML",
-				"moment": "libs/moment-2.7.0"
+				"moment": "libs/moment-2.7.0",
+				"libs/pdf": "libs/pdfjs-1.0.1040/pdf"
 			},
 			"urlArgs" : "fingerprint=#{fingerprint(jsPath + 'ide.js')}-#{fingerprint(jsPath + 'libs.js')}",
 			"waitSeconds": 0,
 			"shim": {
-				"libs/pdfListView/PdfListView": {
-					deps: ["libs/pdf"]
-				},
 				"libs/pdf": {
-					deps: ["libs/compatibility"]
+					deps: ["libs/pdfjs-1.0.1040/compatibility"]
 				},
 				"ace/ext-searchbox": {
 					deps: ["ace/ace"]
@@ -114,25 +117,13 @@ block content
 		};
 		window.aceFingerprint = "#{fingerprint(jsPath + 'ace/ace.js')}"
 
-	script(type='text/javascript').
-		ga('send', 'event', 'editor-interaction', 'editor-opened')
-
 	- locals.suppressDefaultJs = true
 
-	- // user.featureSwitches = {} // override
-	- var usePdfNG = user.featureSwitches && user.featureSwitches.pdfng;
-	- var pdfPath = 'libs/pdf.worker.js';
-	- if (usePdfNG) { pdfPath = 'libs/pdfjs-1.0.712/pdf.worker.js'; }
+	- var pdfPath = 'libs/pdfjs-1.0.1040/pdf.worker.js'
 	- var fingerprintedPath = fingerprint(jsPath+pdfPath)
 	- var pdfJsWorkerPath = jsPath+pdfPath+'?fingerprint='+fingerprintedPath
 	script(type='text/javascript').
 		window.pdfJsWorkerPath = "#{pdfJsWorkerPath}";
-
-	// when using pdfng we need a different pdfjs version
-	if usePdfNG
-		script(type='text/javascript').
-			window.requirejs.paths['libs/pdf'] = 'libs/pdfjs-1.0.712/pdf'
-			window.requirejs.paths['libs/compatibility'] = 'libs/pdfjs-1.0.712/compatibility'
 
 	script(
 		data-main=jsPath+"ide.js",

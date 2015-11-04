@@ -14,7 +14,6 @@ module.exports =
 		self = @
 		clientTokenId = ""
 		RecurlyWrapper.createSubscription user, subscriptionDetails, recurly_token_id, (error, recurlySubscription)->
-			console.log recurlySubscription
 			return callback(error) if error?
 			SubscriptionUpdater.syncSubscription recurlySubscription, user._id, (error) ->
 				return callback(error) if error?
@@ -71,7 +70,9 @@ module.exports =
 			return callback(error) if error?
 			User.findById recurlySubscription.account.account_code, (error, user) ->
 				return callback(error) if error?
-				SubscriptionUpdater.syncSubscription recurlySubscription, user._id, callback
+				if !user?
+					return callback("no user found")
+				SubscriptionUpdater.syncSubscription recurlySubscription, user?._id, callback
 
 
 
