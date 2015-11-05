@@ -290,7 +290,7 @@ module.exports =
 		left_footer: [{
 			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2015"
 		}, {
-			text: "Modified by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2015"
+			text: "Adaptations by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2015"
 		}]
 
 		right_footer: [{
