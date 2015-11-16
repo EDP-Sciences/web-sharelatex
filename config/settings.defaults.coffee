@@ -246,7 +246,7 @@ module.exports =
 	
 	# Should we allow access to any page without logging in? This includes
 	# public projects, /learn, /templates, about pages, etc.
-	allowPublicAccess: false
+	allowPublicAccess: true
 
 	# Internal configs
 	# ----------------
@@ -292,6 +292,17 @@ module.exports =
 		right_footer: [{
 			text: "<i class='fa fa-github-square'></i> Fork on Github!"
 			url: "https://github.com/EDP-Sciences/sharelatex"
+		}]
+
+		below_footer: [{
+			text: "About"
+			url: "http://publications.edpsciences.org/about-us/edp-sciences-presentation"
+		}, {
+			text: "Terms of Service"
+			url: "/terms"
+		}, {
+			text: "Contact us"
+			url: "http://publications.edpsciences.org/component/edp_contact"
 		}]
 
 		header: [{

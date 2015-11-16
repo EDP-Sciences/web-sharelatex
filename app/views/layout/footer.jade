@@ -1,5 +1,3 @@
-
-
 footer.site-footer
 	.container
 		.row
@@ -36,6 +34,14 @@ footer.site-footer
 			ul.col-md-3.text-right
 
 				each item in nav.right_footer
+					li
+						if item.url
+							a(href=item.url, class=item.class) !{item.text}
+						else
+							| !{item.text}
+		.row
+			ul.col-md-12.text-center
+				each item in nav.below_footer
 					li
 						if item.url
 							a(href=item.url, class=item.class) !{item.text}
