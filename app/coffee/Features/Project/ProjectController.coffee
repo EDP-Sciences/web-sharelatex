@@ -151,13 +151,6 @@ module.exports = ProjectController =
 						hasSubscription: results.hasSubscription[0]
 					}
 
-					if Settings?.algolia?.app_id? and Settings?.algolia?.read_only_api_key?
-						viewModel.showUserDetailsArea = true
-						viewModel.algolia_api_key = Settings.algolia.read_only_api_key
-						viewModel.algolia_app_id = Settings.algolia.app_id
-					else
-						viewModel.showUserDetailsArea = false
-
 					res.render 'project/list', viewModel
 					timer.done()
 
@@ -205,7 +198,7 @@ module.exports = ProjectController =
 			user = results.user
 			subscription = results.subscription
 
-			daysSinceLastUpdated =  (new Date() - project.lastUpdated) /86400000
+			daysSinceLastUpdated =  (new Date() - project.lastUpdated) / 86400000
 			logger.log project_id:project_id, daysSinceLastUpdated:daysSinceLastUpdated, "got db results for loading editor"
 
 			SecurityManager.userCanAccessProject user, project, (canAccess, privilegeLevel)->
