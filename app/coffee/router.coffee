@@ -30,7 +30,6 @@ TrackChangesController = require("./Features/TrackChanges/TrackChangesController
 PasswordResetRouter = require("./Features/PasswordReset/PasswordResetRouter")
 StaticPagesRouter = require("./Features/StaticPages/StaticPagesRouter")
 ChatController = require("./Features/Chat/ChatController")
-BlogController = require("./Features/Blog/BlogController")
 WikiController = require("./Features/Wiki/WikiController")
 Modules = require "./infrastructure/Modules"
 OrcidController = require "./Features/Authentication/OrcidController"
@@ -58,6 +57,11 @@ module.exports = class Router
 		webRouter.get  '/logout', UserController.logout
 		webRouter.get  '/restricted', SecurityManager.restricted
 
+		webRouter.get	 '/terms', (req, res)->
+			res.render 'general/terms',
+				title: 'Terms of Service'
+
+
 		# Left as a placeholder for implementing a public register page
 		webRouter.get  '/register', UserPagesController.registerPage
 		AuthenticationController.addEndpointToLoginWhitelist '/register'
@@ -77,9 +81,6 @@ module.exports = class Router
 
 		if Settings.enableSubscriptions
 			webRouter.get  '/user/bonus', AuthenticationController.requireLogin(), ReferalMiddleware.getUserReferalId, ReferalController.bonus
-		
-		webRouter.get '/blog', BlogController.getIndexPage
-		webRouter.get '/blog/*', BlogController.getPage
 		
 		webRouter.get  '/user/settings', AuthenticationController.requireLogin(), UserPagesController.settingsPage
 		webRouter.post '/user/settings', AuthenticationController.requireLogin(), UserController.updateUserSettings
