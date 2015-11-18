@@ -61,6 +61,10 @@ module.exports = class Router
 			res.render 'general/terms',
 				title: 'Terms of Service'
 
+		webRouter.get	 '/contact', (req, res)->
+			res.render 'general/contact',
+				title: 'Contact'
+
 
 		# Left as a placeholder for implementing a public register page
 		webRouter.get  '/register', UserPagesController.registerPage
