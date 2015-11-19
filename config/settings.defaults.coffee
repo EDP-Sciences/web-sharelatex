@@ -306,14 +306,10 @@ module.exports =
 			url: "/terms"
 		}, {
 			text: "Contact us"
-			url: "http://publications.edpsciences.org/component/edp_contact"
+			url: "/contact"
 		}]
 
 		header: [{
-			text: "Register"
-			url: "/register"
-			only_when_logged_out: true
-		}, {
 			text: "Log In"
 			url: "/login"
 			only_when_logged_out: true
