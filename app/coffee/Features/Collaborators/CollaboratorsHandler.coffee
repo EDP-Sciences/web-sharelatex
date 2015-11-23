@@ -48,7 +48,7 @@ module.exports = CollaboratorsHandler =
 		if orcid?
 			CollaboratorsHandler.addOrcidToProject project_id, adding_user_id, orcid, privilegeLevel, callback
 		else
-			CollaboratorsHandler.addEmailToProject project_id, adding_user_id, orcid, privilegeLevel, callback
+			CollaboratorsHandler.addEmailToProject project_id, adding_user_id, email_or_orcid, privilegeLevel, callback
 
 	addUserIdToProject: (project_id, adding_user_id, user_id, privilegeLevel, callback = (error) ->)->
 		Project.findOne { _id: project_id }, { collaberator_refs: 1, readOnly_refs: 1 }, (error, project) ->
