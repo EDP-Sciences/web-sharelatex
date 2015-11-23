@@ -9,12 +9,12 @@ CollaboratorsEmailHandler = require "./CollaboratorsEmailHandler"
 
 orcid_regexp = /^(?:(?:http:\/\/)?orcid\.org\/)?(\d{4}\-\d{4}\-\d{4}\-\d\d\d[\dx])$/i
 
-is_orcid = (orcid_or_email) ->
-	logger.log 'is_orcid', orcid_or_email, orcid_regexp.test orcid_or_email
-	result = orcid_regexp.exec orcid_or_email
-	result[1] if result?
-
 module.exports = CollaboratorsHandler =
+	isOrcid: (orcid_or_email) ->
+		logger.log 'is_orcid', orcid_or_email, orcid_regexp.test orcid_or_email
+		result = orcid_regexp.exec orcid_or_email
+		result[1] if result?
+
 	removeUserFromProject: (project_id, user_id, callback = (error) ->)->
 		logger.log user_id: user_id, project_id: project_id, "removing user"
 		conditions = _id:project_id
@@ -44,7 +44,7 @@ module.exports = CollaboratorsHandler =
 				return callback null, user._id
 
 	addEmailOrOrcidToProject: (project_id, adding_user_id, email_or_orcid, privilegeLevel, callback = (error, user) ->) ->
-		orcid = is_orcid email_or_orcid
+		orcid = CollaboratorsHandler.isOrcid email_or_orcid
 		if orcid?
 			CollaboratorsHandler.addOrcidToProject project_id, adding_user_id, orcid, privilegeLevel, callback
 		else

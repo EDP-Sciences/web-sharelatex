@@ -110,7 +110,7 @@ describe "CollaboratorsHandler", ->
 	
 	describe "addEmailToProject", ->
 		beforeEach ->
-			@UserCreator.getUserOrCreateHoldingAccount = sinon.stub().callsArgWith(1, null, @user = {_id: @user_id})
+			@UserCreator.getUserByEmailOrCreateHoldingAccount = sinon.stub().callsArgWith(1, null, @user = {_id: @user_id})
 			@CollaboratorHandler.addUserIdToProject = sinon.stub().callsArg(4)
 
 		describe "with a valid email", ->
@@ -118,7 +118,7 @@ describe "CollaboratorsHandler", ->
 				@CollaboratorHandler.addEmailToProject @project_id, @adding_user_id, (@email = "Joe@example.com"), (@privilegeLevel = "readAndWrite"), @callback
 			
 			it "should get the user with the lowercased email", ->
-				@UserCreator.getUserOrCreateHoldingAccount
+				@UserCreator.getUserByEmailOrCreateHoldingAccount
 					.calledWith(@email.toLowerCase())
 					.should.equal true
 		

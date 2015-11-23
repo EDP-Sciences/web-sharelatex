@@ -53,7 +53,7 @@ describe "CollaboratorsController", ->
 		it "should return the formatted collaborators", ->
 			@res.body.should.equal JSON.stringify(@collaborators)
 
-	describe "addUserToProject", ->
+	describe "addUserToProject email", ->
 		beforeEach ->
 			@req.params =
 				Project_id: @project_id
@@ -73,6 +73,7 @@ describe "CollaboratorsController", ->
 			@LimitationsManager.canAddXCollaborators = sinon.stub().callsArgWith(2, null, true)
 			@ProjectEditorHandler.buildUserModelView = sinon.stub().returns(@user_view)
 			@CollaboratorsHandler.addEmailToProject = sinon.stub().callsArgWith(4, null, @user_id)
+			@CollaboratorsHandler.isOrcid = sinon.stub().returns(false)
 			@UserGetter.getUser = sinon.stub().callsArgWith(1, null, @user)
 			@EditorRealTimeController.emitToRoom = sinon.stub()
 			@callback = sinon.stub()

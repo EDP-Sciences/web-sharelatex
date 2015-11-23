@@ -25,15 +25,22 @@ module.exports = CollaboratorsController =
 				return res.json { user: false }
 			else
 				{email, privileges} = req.body
-				
 				adding_user_id = req.session?.user?._id
-				CollaboratorsHandler.addEmailOrOrcidToProject project_id, adding_user_id, email, privileges, (error, user_id) =>
+				cb = (error, user_id) =>
 					return next(error) if error?
 					UserGetter.getUser user_id, (error, raw_user) ->
 						return next(error) if error?
 						user = ProjectEditorHandler.buildUserModelView(raw_user, privileges)
 						EditorRealTimeController.emitToRoom(project_id, 'userAddedToProject', user, privileges)
 						return res.json { user: user }
+
+				if CollaboratorsHandler.isOrcid email
+					CollaboratorsHandler.addOrcidToProject project_id, adding_user_id, email, privileges, cb
+				else
+					email = mimelib.parseAddresses(email or "")[0]?.address?.toLowerCase()
+					if !email? or email == ""
+						return res.status(400).send "invalid email address"
+					CollaboratorsHandler.addEmailToProject project_id, adding_user_id, email, privileges, cb
 
 	removeUserFromProject: (req, res, next) ->
 		project_id = req.params.Project_id
