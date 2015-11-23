@@ -5,6 +5,8 @@ logger = require "logger-sharelatex"
 module.exports = ContactManager =
 	getContactIds: (user_id, options = { limits: 50 }, callback = (error, contacts) ->) ->
 		logger.log {user_id}, "getting user contacts"
+		if not settings.apis.contacts?.url?
+			return []
 		url = "#{settings.apis.contacts.url}/user/#{user_id}/contacts"
 		request.get {
 			url: url
@@ -22,6 +24,8 @@ module.exports = ContactManager =
 	
 	addContact: (user_id, contact_id, callback = (error) ->) ->
 		logger.log {user_id, contact_id}, "add user contact"
+		if not settings.apis.contacts?.url?
+			return callback()
 		url = "#{settings.apis.contacts.url}/user/#{user_id}/contacts"
 		request.post {
 			url: url
