@@ -26,7 +26,7 @@ define [
 
 			ctrl.$validators.email = (modelValue, viewValue) ->
 				return true if is_valid_orcid viewValue
-				email_validator modelValue, viewValue
+				email_validator modelValue, viewValue if email_validator
 
 	App.controller "ShareProjectModalController", ["$scope", "$modalInstance", "$timeout", "projectMembers", "$modal", "$http", ($scope, $modalInstance, $timeout, projectMembers, $modal, $http) ->
 		$scope.inputs = {
@@ -49,85 +49,23 @@ define [
 			allowedNoOfMembers = $scope.project.features.collaborators
 			$scope.canAddCollaborators = noOfMembers < allowedNoOfMembers or allowedNoOfMembers == INFINITE_COLLABORATORS
 
-		$scope.autocompleteContacts = []
-		do loadAutocompleteUsers = () ->
-			$http.get "/user/contacts"
+		$scope.addMember = () ->
+			return if $scope.inputs.contact.length == 0
+			request = projectMembers.addMember $scope.inputs.contact, $scope.inputs.privileges
+
+			request
 				.success (data) ->
-					$scope.autocompleteContacts = data.contacts or []
-					for contact in $scope.autocompleteContacts
-						if contact.type == "user"
-							if contact.last_name == "" and contact.first_name = contact.email.split("@")[0]
-								# User has not set their proper name so use email as canonical display property
-								contact.display = contact.email
-							else
-								contact.name = "#{contact.first_name} #{contact.last_name}"
-								contact.display = "#{contact.name} <#{contact.email}>"
-						else
-							# Must be a group
-							contact.display = contact.name
+					if data.users?
+						users = data.users
+					else if data.user?
+						users = [data.user]
+					else
+						users = []
 
-		getCurrentMemberEmails = () ->
-			$scope.project.members.map (u) -> u.email
-
-		$scope.filterAutocompleteUsers = ($query) ->
-			currentMemberEmails = getCurrentMemberEmails()
-			return $scope.autocompleteContacts.filter (contact) ->
-				if contact.email? and contact.email in currentMemberEmails
-					return false
-				for text in [contact.name, contact.email]
-					if text?.toLowerCase().indexOf($query.toLowerCase()) > -1
-						return true
-				return false
-
-		$scope.addMembers = () ->
-			addMembers = () ->
-				return if $scope.inputs.contacts.length == 0
-
-				members = $scope.inputs.contacts
-				$scope.inputs.contacts = []
-				$scope.state.error = null
-				$scope.state.inflight = true
-
-				currentMemberEmails = getCurrentMemberEmails()
-				do addNextMember = () ->
-					if members.length == 0 or !$scope.canAddCollaborators
-						$scope.state.inflight = false
-						$scope.$apply()
-						return
-
-					member = members.shift()
-					if !member.type? and member.display in currentMemberEmails
-						# Skip this existing member
-						return addNextMember()
-
-					if member.type == "user"
-						request = projectMembers.addMember(member.email, $scope.inputs.privileges)
-					else if member.type == "group"
-						request = projectMembers.addGroup(member.id, $scope.inputs.privileges)
-					else # Not an auto-complete object, so email == display
-						request = projectMembers.addMember(member.display, $scope.inputs.privileges)
-
-					request
-						.success (data) ->
-							if data.users?
-								users = data.users
-							else if data.user?
-								users = [data.user]
-							else
-								users = []
-
-							$scope.project.members.push users...
-							setTimeout () ->
-								# Give $scope a chance to update $scope.canAddCollaborators
-								# with new collaborator information.
-								addNextMember()
-							, 0
-						.error () ->
-							$scope.state.inflight = false
-							$scope.state.error = true
-
-
-			$timeout addMembers, 50 # Give email list a chance to update
+					$scope.project.members.push users...
+				.error () ->
+					$scope.state.inflight = false
+					$scope.state.error = true
 
 		$scope.removeMember = (member) ->
 			$scope.state.error = null
