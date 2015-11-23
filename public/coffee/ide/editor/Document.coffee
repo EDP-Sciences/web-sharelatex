@@ -150,14 +150,16 @@ define [
 				wantToBeJoined: @wantToBeJoined
 				update: update
 
-			if Math.random() < (@ide.disconnectRate or 0)
-				console.log "Simulating disconnect"
-				@ide.connectionManager.disconnect()
+			if window.disconnectOnAck? and Math.random() < window.disconnectOnAck
+				console.log "Disconnecting on ack", update
+				window._ide.socket.socket.disconnect()
+				# Pretend we never received the ack
 				return
 
-			if Math.random() < (@ide.ignoreRate or 0)
-				console.log "Simulating lost update"
-				return
+			if window.dropAcks? and Math.random() < window.dropAcks
+				if !update.op? # Only drop our own acks, not collaborator updates
+					console.log "Simulating a lost ack", update
+					return
 
 			if update?.doc == @doc_id and @doc?
 				@doc.processUpdateFromServer update
@@ -240,8 +242,7 @@ define [
 					doc_id: @doc_id
 					op: op
 				@trigger "op:timeout"
-				ga?('send', 'event', 'error', "op timeout", "Op was now acknowledged - #{@ide.socket.socket.transport.name}" )
-				@ide.connectionManager.reconnectImmediately()
+				@_onError new Error("op timed out"), {op: op}
 			@doc.on "flush", (inflightOp, pendingOp, version) =>
 				@ide.pushEvent "flush",
 					doc_id: @doc_id,
@@ -250,11 +251,9 @@ define [
 					v: version
 
 		_onError: (error, meta = {}) ->
+			meta.doc_id = @doc_id
 			console.error "ShareJS error", error, meta
 			ga?('send', 'event', 'error', "shareJsError", "#{error.message} - #{@ide.socket.socket.transport.name}" )
-			@ide.socket.disconnect()
-			meta.doc_id = @doc_id
-			@ide.reportError(error, meta)
 			@doc?.clearInflightAndPendingOps()
 			@_cleanUp()
-			@trigger "error", error
+			@trigger "error", error, meta

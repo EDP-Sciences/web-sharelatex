@@ -2,14 +2,14 @@ define [
 	"base"
 ], (App)->
 
-	App.controller "NewSubscriptionController", ($scope, MultiCurrencyPricing, abTestManager, $http)->
+	App.controller "NewSubscriptionController", ($scope, MultiCurrencyPricing, abTestManager, $http, sixpack)->
 		throw new Error("Recurly API Library Missing.")  if typeof recurly is "undefined"
 	
 		$scope.currencyCode = MultiCurrencyPricing.currencyCode
 		$scope.plans = MultiCurrencyPricing.plans
 
 		$scope.switchToStudent = ()->
-			window.location = "/user/subscription/new?planCode=student&currency=#{$scope.currencyCode}"
+			window.location = "/user/subscription/new?planCode=student_free_trial_7_days&currency=#{$scope.currencyCode}&cc=#{$scope.data.coupon}"
 
 
 		$scope.paymentMethod = "credit_card"
@@ -29,7 +29,7 @@ define [
 			country:window.countryCode
 			coupon: window.couponCode
 
-
+ 
 		$scope.validation =
 			correctCardNumber : true
 			correctExpiry: true
@@ -55,6 +55,15 @@ define [
 			$scope.price = pricing.price
 			$scope.trialLength = pricing.items.plan.trial?.length
 			$scope.monthlyBilling = pricing.items.plan.period.length == 1
+			if pricing.items?.coupon?.discount?.type == "percent"
+				basePrice = parseInt(pricing.price.base.plan.unit)
+				$scope.normalPrice = basePrice
+				if pricing.items.coupon.applies_for_months > 0 and pricing.items.coupon?.discount?.rate and pricing.items.coupon?.applies_for_months?
+					$scope.discountMonths =  pricing.items.coupon?.applies_for_months
+					$scope.discountRate =  pricing.items.coupon?.discount?.rate * 100
+
+				if pricing.price?.taxes[0]?.rate?
+					$scope.normalPrice += (basePrice * pricing.price.taxes[0].rate)
 			$scope.$apply()
 
 		$scope.applyCoupon = ->
@@ -108,7 +117,8 @@ define [
 						coupon_code:pricing.items?.coupon?.code || ""
 				$http.post("/user/subscription/create", postData)
 					.success (data, status, headers)->
-						window.location.href = "/user/subscription/thank-you"
+						sixpack.convert "in-editor-free-trial-plan", pricing.items.plan.code, (err)->
+							window.location.href = "/user/subscription/thank-you"
 					.error (data, status, headers)->
 						$scope.processing = false
 						$scope.genericError = "Something went wrong processing the request"

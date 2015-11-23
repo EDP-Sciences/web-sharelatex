@@ -102,7 +102,9 @@ module.exports =
 			url: "http://localhost:8080/json"
 		realTime:
 			url: "http://localhost:3026"
-			
+		contacts:
+			url: "http://localhost:3036"
+
 	templates:
 		user_id: process.env.TEMPLATES_USER_ID or "5395eb7aad1f29a88756c7f2"
 		showSocialButtons: false
@@ -246,7 +248,10 @@ module.exports =
 	
 	# Should we allow access to any page without logging in? This includes
 	# public projects, /learn, /templates, about pages, etc.
-	allowPublicAccess: true
+	allowPublicAccess: false
+
+	# Maximum size of text documents in the real-time editing system.
+	max_doc_length: 2 * 1024 * 1024 # 2mb
 
 	# Internal configs
 	# ----------------
@@ -367,13 +372,17 @@ module.exports =
 	]
 
 	sixpack:
-		domain:"http://45.79.157.156:5000"
+		domain:""
 	# ShareLaTeX Server Pro options (https://www.sharelatex.com/university/onsite.html)
 	# ----------
 
 
-	# username = einstein
-	# password = password
+
+	# LDAP
+	# ----------
+	# Settings below use a working LDAP test server kindly provided by forumsys.com
+	# When testing with forumsys.com use username = einstein and password = password
+
 	# ldap :
 	# 	host: 'ldap://ldap.forumsys.com'
 	# 	dn: 'uid=:userKey,dc=example,dc=com'
@@ -384,7 +393,9 @@ module.exports =
 	# 	placeholder: 'LDAP User ID'
 	# 	emailAtt: 'mail'
 	# 	anonymous: false
-	
+	#	adminDN: 'cn=read-only-admin,dc=example,dc=com'
+	#	adminPW: 'password'
+
 	#templateLinks: [{
 	#	name : "CV projects",
 	#	url : "/templates/cv"

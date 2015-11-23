@@ -63,8 +63,7 @@ describe "LimitationsManager", ->
 		it "should return the total number of collaborators", ->
 			@callback.calledWith(null, 3).should.equal true
 
-	describe "isCollaboratorLimitReached", ->
-
+	describe "canAddXCollaborators", ->
 		beforeEach ->
 			@LimitationsManager.currentNumberOfCollaboratorsInProject = sinon.stub()
 			@LimitationsManager.allowedNumberOfCollaboratorsInProject = sinon.stub()
@@ -76,9 +75,9 @@ describe "LimitationsManager", ->
 				@LimitationsManager.allowedNumberOfCollaboratorsInProject.callsArgWith 1, null, 2
 
 			it "should return false", (done) ->
-				@LimitationsManager.isCollaboratorLimitReached @project_id, (err, reached) ->
+				@LimitationsManager.canAddXCollaborators @project_id, 1, (err, canAdd) ->
 					expect(err).to.not.be.ok
-					expect(reached).to.be.false
+					expect(canAdd).to.be.true
 					done()
 
 		describe "when the project has more collaborators than allowed", ->
@@ -86,10 +85,10 @@ describe "LimitationsManager", ->
 				@LimitationsManager.currentNumberOfCollaboratorsInProject.callsArgWith 1, null, 3
 				@LimitationsManager.allowedNumberOfCollaboratorsInProject.callsArgWith 1, null, 2
 
-			it "should return true", (done) ->
-				@LimitationsManager.isCollaboratorLimitReached @project_id, (err, reached) ->
+			it "should return false", (done) ->
+				@LimitationsManager.canAddXCollaborators @project_id, 1, (err, canAdd) ->
 					expect(err).to.not.be.ok
-					expect(reached).to.be.true
+					expect(canAdd).to.be.false
 					done()
 
 		describe "when the project has infinite collaborators", ->
@@ -97,10 +96,10 @@ describe "LimitationsManager", ->
 				@LimitationsManager.currentNumberOfCollaboratorsInProject.callsArgWith 1, null, 100
 				@LimitationsManager.allowedNumberOfCollaboratorsInProject.callsArgWith 1, null, -1
 
-			it "should return false", (done) ->
-				@LimitationsManager.isCollaboratorLimitReached @project_id, (err, reached) ->
+			it "should return true", (done) ->
+				@LimitationsManager.canAddXCollaborators @project_id, 1, (err, canAdd) ->
 					expect(err).to.not.be.ok
-					expect(reached).to.be.false
+					expect(canAdd).to.be.true
 					done()
 
 	describe "userHasSubscription", ->

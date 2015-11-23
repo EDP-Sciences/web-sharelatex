@@ -12,6 +12,8 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-sed'
 	grunt.loadNpmTasks 'grunt-git-rev-parse'
 	grunt.loadNpmTasks 'grunt-file-append'
+	grunt.loadNpmTasks 'grunt-file-append'
+	grunt.loadNpmTasks 'grunt-env'
 
 	config =
 		execute:
@@ -74,6 +76,11 @@ module.exports = (grunt) ->
 				files:
 					"public/stylesheets/style.css": "public/stylesheets/style.less"
 					"public/stylesheets/login-page.css": "public/stylesheets/components/login-page.less"
+
+		env:
+			run:
+				add: 
+					NODE_TLS_REJECT_UNAUTHORIZED:0
 
 		requirejs:
 			compile:
@@ -295,7 +302,7 @@ module.exports = (grunt) ->
 	
 	grunt.registerTask 'test:modules:unit', 'Run the unit tests for the modules', ['compile:modules:server', 'compile:modules:unit_tests'].concat(moduleUnitTestTasks)
 
-	grunt.registerTask 'run', "Compile and run the web-sharelatex server", ['compile', 'bunyan', 'execute']
+	grunt.registerTask 'run', "Compile and run the web-sharelatex server", ['compile', 'bunyan', 'env:run', 'execute']
 	grunt.registerTask 'default', 'run'
 
 	grunt.registerTask 'version', "Write the version number into sentry.jade", ['git-rev-parse', 'sed']

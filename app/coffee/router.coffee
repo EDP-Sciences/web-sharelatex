@@ -32,12 +32,12 @@ StaticPagesRouter = require("./Features/StaticPages/StaticPagesRouter")
 ChatController = require("./Features/Chat/ChatController")
 WikiController = require("./Features/Wiki/WikiController")
 Modules = require "./infrastructure/Modules"
-OrcidController = require "./Features/Authentication/OrcidController"
 RateLimiterMiddlewear = require('./Features/Security/RateLimiterMiddlewear')
 OrcidController = require "./Features/Authentication/OrcidController"
 ObjectDisplayRouter = require "./Features/ObjectDisplay/ObjectDisplayRouter"
 RealTimeProxyRouter = require('./Features/RealTimeProxy/RealTimeProxyRouter')
 InactiveProjectController = require("./Features/InactiveData/InactiveProjectController")
+ContactRouter = require("./Features/Contacts/ContactRouter")
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -78,6 +78,7 @@ module.exports = class Router
 		PasswordResetRouter.apply(webRouter, apiRouter)
 		StaticPagesRouter.apply(webRouter, apiRouter)
 		RealTimeProxyRouter.apply(webRouter, apiRouter)
+		ContactRouter.apply(webRouter, apiRouter)
 		ObjectDisplayRouter.apply webRouter
 
 		Modules.applyRouter(webRouter, apiRouter)
@@ -85,7 +86,7 @@ module.exports = class Router
 
 		if Settings.enableSubscriptions
 			webRouter.get  '/user/bonus', AuthenticationController.requireLogin(), ReferalMiddleware.getUserReferalId, ReferalController.bonus
-		
+
 		webRouter.get  '/user/settings', AuthenticationController.requireLogin(), UserPagesController.settingsPage
 		webRouter.post '/user/settings', AuthenticationController.requireLogin(), UserController.updateUserSettings
 		webRouter.post '/user/password/update', AuthenticationController.requireLogin(), UserController.changePassword
