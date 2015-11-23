@@ -9,5 +9,9 @@ module.exports =
 		db.users.findOne email:email, (err, user)->
 			callback(err, user)
 
+	findByOrcid: (orcid, callback)->
+		db.users.findOne orcid:orcid, (err, user)->
+			callback(err, user)
+
 	findById: (_id, callback)->
 		db.users.findOne _id:ObjectId(_id+""), callback

@@ -26,12 +26,8 @@ module.exports = CollaboratorsController =
 			else
 				{email, privileges} = req.body
 				
-				email = mimelib.parseAddresses(email or "")[0]?.address?.toLowerCase()
-				if !email? or email == ""
-					return res.status(400).send("invalid email address")
-					
 				adding_user_id = req.session?.user?._id
-				CollaboratorsHandler.addEmailToProject project_id, adding_user_id, email, privileges, (error, user_id) =>
+				CollaboratorsHandler.addEmailOrOrcidToProject project_id, adding_user_id, email, privileges, (error, user_id) =>
 					return next(error) if error?
 					UserGetter.getUser user_id, (error, raw_user) ->
 						return next(error) if error?

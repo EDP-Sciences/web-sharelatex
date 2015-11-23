@@ -3,13 +3,21 @@ UserLocator = require("./UserLocator")
 
 module.exports =
 
-	getUserOrCreateHoldingAccount: (email, callback = (err, user)->)->
+	getUserByEmailOrCreateHoldingAccount: (email, callback = (err, user)->)->
 		self = @
 		UserLocator.findByEmail email, (err, user)->
 			if user?
 				callback(err, user)
 			else
 				self.createNewUser email:email, holdingAccount:true, callback
+
+	getUserByOrcidOrCreateHoldingAccount: (orcid, callback = (err, user)->)->
+		self = @
+		UserLocator.findByOrcid orcid, (err, user)->
+			if user?
+				callback(err, user)
+			else
+				self.createNewUser orcid:orcid, holdingAccount:true, callback
 
 	createNewUser: (opts, callback)->
 		user = new User()
