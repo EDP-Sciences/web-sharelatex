@@ -89,6 +89,9 @@ describe "FileStoreController", ->
 
 					beforeEach ->
 						@user_agent = "An iPhone browser"
+						@req.get = (key) =>
+							if key == 'User-Agent'
+								@user_agent
 
 					it "should set Content-Type to 'text/plain'", (done) ->
 						@stream.pipe = (des) =>
@@ -100,6 +103,9 @@ describe "FileStoreController", ->
 
 					beforeEach ->
 						@user_agent = "An iPad browser"
+						@req.get = (key) =>
+							if key == 'User-Agent'
+								@user_agent
 
 					it "should set Content-Type to 'text/plain'", (done) ->
 						@stream.pipe = (des) =>

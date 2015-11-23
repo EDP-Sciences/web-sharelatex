@@ -55,6 +55,7 @@ describe "Subscription Updater", ->
 			"logger-sharelatex": log:->
 			'settings-sharelatex': @Settings
 			"../Referal/ReferalAllocator" : @ReferalAllocator
+			"mongoose": Types: ObjectId: ObjectId
 
 
 	describe "syncSubscription", ->

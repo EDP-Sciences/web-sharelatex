@@ -13,6 +13,7 @@ describe 'UpdateMerger :', ->
 		@projectEntityHandler = {}
 		@fs = 
 			unlink:sinon.stub().callsArgWith(1)
+			existsSync: sinon.stub().returns(false)
 		@FileTypeManager = {}
 		@updateMerger = SandboxedModule.require modulePath, requires:
 			'../Editor/EditorController': @editorController

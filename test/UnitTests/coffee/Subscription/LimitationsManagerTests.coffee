@@ -1,6 +1,7 @@
 SandboxedModule = require('sandboxed-module')
 sinon = require('sinon')
 require('chai').should()
+expect = (require 'chai').expect
 modulePath = require('path').join __dirname, '../../../../app/js/Features/Subscription/LimitationsManager'
 Settings = require("settings-sharelatex")
 
@@ -63,42 +64,44 @@ describe "LimitationsManager", ->
 			@callback.calledWith(null, 3).should.equal true
 
 	describe "isCollaboratorLimitReached", ->
+
 		beforeEach ->
-			sinon.stub @LimitationsManager,
-					   "currentNumberOfCollaboratorsInProject",
-					   (project_id, callback) => callback(null, @current_number)
-			sinon.stub @LimitationsManager,
-					   "allowedNumberOfCollaboratorsInProject",
-					   (project_id, callback) => callback(null, @allowed_number)
-			@callback = sinon.stub()
+			@LimitationsManager.currentNumberOfCollaboratorsInProject = sinon.stub()
+			@LimitationsManager.allowedNumberOfCollaboratorsInProject = sinon.stub()
 
 		describe "when the project has fewer collaborators than allowed", ->
-			beforeEach ->
-				@current_number = 1
-				@allowed_number = 2
-				@LimitationsManager.isCollaboratorLimitReached(@project_id, @callback)
 
-			it "should return false", ->
-				@callback.calledWith(null, false).should.equal true
+			beforeEach ->
+				@LimitationsManager.currentNumberOfCollaboratorsInProject.callsArgWith 1, null, 1
+				@LimitationsManager.allowedNumberOfCollaboratorsInProject.callsArgWith 1, null, 2
+
+			it "should return false", (done) ->
+				@LimitationsManager.isCollaboratorLimitReached @project_id, (err, reached) ->
+					expect(err).to.not.be.ok
+					expect(reached).to.be.false
+					done()
 
 		describe "when the project has more collaborators than allowed", ->
 			beforeEach ->
-				@current_number = 3
-				@allowed_number = 2
-				@LimitationsManager.isCollaboratorLimitReached(@project_id, @callback)
+				@LimitationsManager.currentNumberOfCollaboratorsInProject.callsArgWith 1, null, 3
+				@LimitationsManager.allowedNumberOfCollaboratorsInProject.callsArgWith 1, null, 2
 
-			it "should return true", ->
-				@callback.calledWith(null, true).should.equal true
+			it "should return true", (done) ->
+				@LimitationsManager.isCollaboratorLimitReached @project_id, (err, reached) ->
+					expect(err).to.not.be.ok
+					expect(reached).to.be.true
+					done()
 
 		describe "when the project has infinite collaborators", ->
 			beforeEach ->
-				@current_number = 100
-				@allowed_number = -1
-				@LimitationsManager.isCollaboratorLimitReached(@project_id, @callback)
+				@LimitationsManager.currentNumberOfCollaboratorsInProject.callsArgWith 1, null, 100
+				@LimitationsManager.allowedNumberOfCollaboratorsInProject.callsArgWith 1, null, -1
 
-			it "should return false", ->
-				@callback.calledWith(null, false).should.equal true
-
+			it "should return false", (done) ->
+				@LimitationsManager.isCollaboratorLimitReached @project_id, (err, reached) ->
+					expect(err).to.not.be.ok
+					expect(reached).to.be.false
+					done()
 
 	describe "userHasSubscription", ->
 		beforeEach ->

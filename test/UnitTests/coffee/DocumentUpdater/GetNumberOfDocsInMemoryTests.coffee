@@ -13,7 +13,6 @@ describe "getNumberOfDocsInMemory", ->
 			"redis-sharelatex" : 
 				createClient: () ->
 					auth:->
-			"soa-req-id": null
 			"logger-sharelatex": @logger =
 				log: sinon.stub()
 				error: sinon.stub()

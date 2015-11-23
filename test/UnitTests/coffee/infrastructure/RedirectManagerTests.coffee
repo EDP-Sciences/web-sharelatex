@@ -6,7 +6,7 @@ path = require("path")
 modulePath = "../../../../app/js/infrastructure/RedirectManager.js"
 SandboxedModule = require('sandboxed-module')
 
-describe "redirectToNewTemplate", ->
+describe "RedirectManager", ->
 	beforeEach ->
 		@settings = 
 			redirects: 
@@ -25,7 +25,7 @@ describe "redirectToNewTemplate", ->
 
 	describe "redirect", ->
 
-		it "should perminant redirect if url matches redirect", ()->
+		it "should permanent redirect if url matches redirect", ()->
 			@req.url = "/path/here/"
 			nextStub = sinon.stub()
 			@redirectManager @req, @res, nextStub

@@ -66,7 +66,6 @@ describe "EditorController", ->
 			'../Subscription/LimitationsManager' : @LimitationsManager
 			'../../models/Project' : Project: @Project
 			"settings-sharelatex":@settings
-			'../Dropbox/DropboxProjectLinker':@dropboxProjectLinker
 			'./EditorRealTimeController':@EditorRealTimeController = {}
 			"../../infrastructure/Metrics": @Metrics = { inc: sinon.stub() }
 			"../TrackChanges/TrackChangesManager": @TrackChangesManager = {}

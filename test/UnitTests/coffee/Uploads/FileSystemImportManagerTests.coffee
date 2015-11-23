@@ -11,6 +11,7 @@ describe "FileSystemImportManager", ->
 		@name = "test-file.tex"
 		@path_on_disk = "/path/to/file/#{@name}"
 		@replace = "replace-boolean-flag-mock"
+		@callback = sinon.stub()
 		@FileSystemImportManager = SandboxedModule.require modulePath, requires:
 			"fs" : @fs = {}
 			"../Editor/EditorController": @EditorController = {}

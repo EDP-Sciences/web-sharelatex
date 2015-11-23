@@ -7,6 +7,7 @@ SandboxedModule = require('sandboxed-module')
 Settings = require('settings-sharelatex')
 Path = require "path"
 _ = require("underscore")
+ObjectId = (require "mongoose").Types.ObjectId
 
 describe 'ProjectCreationHandler', ->
 	ownerId = '4eecb1c1bffa66588e0000a1'
@@ -47,11 +48,12 @@ describe 'ProjectCreationHandler', ->
 			'../../models/Project':{Project:@ProjectModel}
 			'../../models/Folder':{Folder:@FolderModel}
 			'./ProjectEntityHandler':@ProjectEntityHandler
+			'mongoose': Types: ObjectId: ObjectId
 			'logger-sharelatex': {log:->}
 
 	describe 'Creating a Blank project', ->
 		beforeEach ->
-			@ProjectModel::save = sinon.stub().callsArg(0)
+#			@ProjectModel::save = sinon.stub().callsArg(0)
 
 		describe "successfully", ->
 
@@ -134,11 +136,11 @@ describe 'ProjectCreationHandler', ->
 				.calledWith(project_id, rootFolderId, "references.bib", ["references.bib", "lines"])
 				.should.equal true
 
-		it 'should insert universe.jpg', ->
+		it 'should insert figure.pdf', ->
 			@ProjectEntityHandler.addFile
 				.calledWith(
-					project_id, rootFolderId, "universe.jpg",
-					Path.resolve(__dirname + "/../../../../app/templates/project_files/universe.jpg")
+					project_id, rootFolderId, "figure.pdf",
+					Path.resolve(__dirname + "/../../../../app/templates/project_files/figure.pdf")
 				)
 				.should.equal true
 
@@ -159,7 +161,7 @@ describe 'ProjectCreationHandler', ->
 	describe "_buildTemplate", ->
 
 		beforeEach (done)->
-			@handler._buildTemplate "main.tex", @user_id, projectName, (err, templateLines)=>
+			@handler._buildTemplate "mainbasic.tex", @user_id, projectName, (err, templateLines)=>
 				@template = templateLines.reduce (singleLine, line)-> "#{singleLine}\n#{line}"
 				done()
 

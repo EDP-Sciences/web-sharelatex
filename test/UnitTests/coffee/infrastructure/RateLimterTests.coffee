@@ -6,7 +6,7 @@ expect = chai.expect
 modulePath = "../../../../app/js/infrastructure/RateLimiter.js"
 SandboxedModule = require('sandboxed-module')
 
-describe "FileStoreHandler", ->
+describe "RateLimiter", ->
 
 	beforeEach ->
 		@settings = 

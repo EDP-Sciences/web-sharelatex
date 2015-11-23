@@ -65,7 +65,6 @@ describe "Subscription Handler sanboxed", ->
 			"logger-sharelatex":{log:->}
 			'./LimitationsManager':@LimitationsManager
 			"../Email/EmailHandler":@EmailHandler
-			"../Dropbox/DropboxHandler":@DropboxHandler
 			"../../infrastructure/Events": @Events = {emit: sinon.stub()}
 
 		@SubscriptionHandler.syncSubscriptionToUser = sinon.stub().callsArgWith(2)

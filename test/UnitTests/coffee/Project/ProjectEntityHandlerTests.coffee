@@ -388,6 +388,7 @@ describe 'ProjectEntityHandler', ->
 
 	describe 'getDoc', ->
 		beforeEach ->
+			@callback = sinon.stub()
 			@lines = ["mock", "doc", "lines"]
 			@rev = 5
 			@DocstoreManager.getDoc = sinon.stub().callsArgWith(3, null, @lines, @rev)
@@ -747,6 +748,7 @@ describe 'ProjectEntityHandler', ->
 
 		describe "getAllDocs", ->
 			beforeEach ->
+				@callback = sinon.stub()
 				@docs = [{
 					_id:   @doc1._id
 					lines: @lines1 = ["one"]

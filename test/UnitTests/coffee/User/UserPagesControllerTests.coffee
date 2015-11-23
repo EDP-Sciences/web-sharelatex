@@ -18,14 +18,11 @@ describe "UserPagesController", ->
 		@UserLocator =
 			findById: sinon.stub().callsArgWith(1, null, @user)
 		@dropboxStatus = {}
-		@DropboxHandler =
-			getUserRegistrationStatus : sinon.stub().callsArgWith(1, null, @dropboxStatus)
 		@UserPagesController = SandboxedModule.require modulePath, requires:
 			"settings-sharelatex":@settings
 			"logger-sharelatex": log:->
 			"./UserLocator": @UserLocator
-			'../Dropbox/DropboxHandler': @DropboxHandler
-		@req = 
+		@req =
 			query:{}
 			session:
 					user:@user

@@ -65,7 +65,7 @@ describe "AuthenticationManager", ->
 	describe "setUserPassword", ->
 		beforeEach ->
 			@user_id = ObjectId()
-			@password = "banana"
+			@unencryptedPassword = "banana"
 			@hashedPassword = "asdkjfa;osiuvandf"
 			@salt = "saltaasdfasdfasdf"
 			@bcrypt.genSalt = sinon.stub().callsArgWith(1, null, @salt)
@@ -90,7 +90,7 @@ describe "AuthenticationManager", ->
 				.calledWith(7)
 				.should.equal true
 			@bcrypt.hash
-				.calledWith(@password, @salt)
+				.calledWith(@unencryptedPassword, @salt)
 				.should.equal true
 
 		it "should call the callback", ->
@@ -99,6 +99,7 @@ describe "AuthenticationManager", ->
 	describe "getAuthToken", ->
 		beforeEach ->
 			@auth_token = "auth-token"
+			@user_id = ObjectId()
 
 		describe "when the user has an auth token set", ->
 			beforeEach ->

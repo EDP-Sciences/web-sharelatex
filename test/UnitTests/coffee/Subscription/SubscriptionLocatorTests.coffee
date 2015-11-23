@@ -18,6 +18,7 @@ describe "Subscription Locator Tests", ->
 		@SubscriptionLocator = SandboxedModule.require modulePath, requires:
 			'../../models/Subscription': Subscription:@Subscription
 			"logger-sharelatex": log:->
+			"mongoose": Types: ObjectId: ObjectId
 
 	describe "finding users subscription", ->
 

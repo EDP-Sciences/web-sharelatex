@@ -21,7 +21,6 @@ describe 'TpdsUpdateHandler', ->
 			shouldIgnore: sinon.stub().callsArgWith(1, null, false)
 		@handler = SandboxedModule.require modulePath, requires:
 			'./UpdateMerger': @updateMerger
-			'./Editor/EditorController': @editorController
 			'../Project/ProjectLocator': @projectLocator
 			'../Project/ProjectCreationHandler':@projectCreationHandler
 			'../Project/ProjectDeleter': @projectDeleter

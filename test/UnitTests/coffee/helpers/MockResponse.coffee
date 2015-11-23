@@ -35,6 +35,11 @@ class MockResponse
 			@success = false
 		@callback() if @callback?
 
+	status: (status) ->
+		@statusCode = status
+		@success = 200 <= status < 300
+		@
+
 	send: (status, body) ->
 		if arguments.length < 2
 			if typeof status != "number"

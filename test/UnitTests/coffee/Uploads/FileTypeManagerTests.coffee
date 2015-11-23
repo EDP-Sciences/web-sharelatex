@@ -6,13 +6,13 @@ SandboxedModule = require('sandboxed-module')
 
 describe "FileTypeManager", ->
 	beforeEach ->
-		@fs = {}
-		@Magic = {}
+		@stat = { size: 100 }
+		@fs =
+			stat: sinon.stub().callsArgWith(1, null, @stat)
 		@path = "/path/to/test"
 		@callback = sinon.stub()
 		@FileTypeManager = SandboxedModule.require modulePath, requires:
 			"fs": @fs
-			"mmmagic" : Magic: (options) => @Magic
 
 	describe "isDirectory", ->
 		beforeEach ->
@@ -36,10 +36,7 @@ describe "FileTypeManager", ->
 				@callback.calledWith(null, false).should.equal true
 
 	describe "isBinary", ->
-		beforeEach ->
-			@stat = { size: 100 }
-			@fs.stat = sinon.stub().callsArgWith(1, null, @stat)
-			
+
 		it "should return .tex files as not binary", ->
 			@FileTypeManager.isBinary "file.tex", "/path/on/disk", (error, binary) ->
 				binary.should.equal false
