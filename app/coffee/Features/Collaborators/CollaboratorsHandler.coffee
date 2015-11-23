@@ -15,19 +15,29 @@ is_orcid = (orcid_or_email) ->
 	result[1] if result?
 
 module.exports = CollaboratorsHandler =
+	removeUserFromProject: (project_id, user_id, callback = (error) ->)->
+		logger.log user_id: user_id, project_id: project_id, "removing user"
+		conditions = _id:project_id
+		update = $pull:{}
+		update["$pull"] = collaberator_refs:user_id, readOnly_refs:user_id
+		Project.update conditions, update, (err)->
+			if err?
+				logger.error err: err, "problem removing user from project collaborators"
+			callback(err)
+
 	addEmailToProject: (project_id, adding_user_id, unparsed_email, privilegeLevel, callback = (error, user) ->) ->
 		emails = mimelib.parseAddresses(unparsed_email)
 		email = emails[0]?.address?.toLowerCase()
 		if !email? or email == ""
 			return callback(new Error("no valid email provided: '#{unparsed_email}'"))
-		UserCreator.getUserOrCreateHoldingAccount email, (error, user) ->
+		UserCreator.getUserByEmailOrCreateHoldingAccount email, (error, user) ->
 			return callback(error) if error?
 			CollaboratorsHandler.addUserIdToProject project_id, adding_user_id, user._id, privilegeLevel, (error) ->
 				return callback(error) if error?
 				return callback null, user._id
 
 	addOrcidToProject: (project_id, adding_user_id, orcid, privilegeLevel, callback = (error, user) ->) ->
-		UserCreator.getUserOrCreateHoldingAccount email, (error, user) ->
+		UserCreator.getUserByOrcidOrCreateHoldingAccount orcid, (error, user) ->
 			return callback(error) if error?
 			CollaboratorsHandler.addUserIdToProject project_id, adding_user_id, user._id, privilegeLevel, (error) ->
 				return callback(error) if error?
