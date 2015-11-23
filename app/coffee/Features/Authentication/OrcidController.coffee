@@ -10,7 +10,7 @@ https = require "https"
 http = require "http"
 Settings = require "settings-sharelatex"
 xml2js = require "xml2js"
-isArray = require "isarray"
+_ = require "underscore"
 
 require "../../models/Orcid"
 orcids = (require "../../infrastructure/mongojs").db.collection 'orcids'
@@ -26,19 +26,9 @@ auto_request = (options) ->
     return https.request options
   throw 'Invalid protocol'
 
-find_node_content = (root, nodes, callback) ->
-  return (callback null, root) if not nodes
-  for node in nodes
-    return (callback "#{node} not found") if not root[node]
-    subnodes = root[node]
-    snodes = nodes.clone()
-    snodes.splice 0, 1
-    for subnode in subnodes
-      find_node_content subnode, snodes, callback
-
 find_email = (emails) ->
   return null if !emails?
-  if not isArray emails
+  if not _.isArray emails
     emails = [emails]
   first_email = null
   primary_email = null
@@ -116,9 +106,10 @@ module.exports = OrcidController =
         email = find_email result?["orcid-profile"]?["orcid-bio"]?["contact-details"]?["email"]
 
         update = {}
-        update.first_name = first_name if first_name?
-        update.last_name = last_name if last_name?
-        update.email = email if email?
+        update.first_name = first_name if first_name? and not user.first_name?
+        update.last_name = last_name if last_name? and not user.last_name?
+        update.email = email if email? and not user.email?
+        return callback() if not _.isEmpty update
 
         logger.info 'orcid-bio data', update
 
@@ -127,9 +118,9 @@ module.exports = OrcidController =
             update
         , (error) ->
           return (callback error) if error?
-          user.first_name = first_name if first_name?
-          user.last_name = last_name if last_name?
-          user.email = email if email?
+          user.first_name = update.first_name if update.first_name?
+          user.last_name = update.last_name if update.last_name?
+          user.email = update.email if update.email?
           callback()
 
   setLoginUrl: (req, res, next) ->
