@@ -72,7 +72,7 @@ module.exports =
 					user: user
 					year: new Date().getUTCFullYear()
 					month: monthNames[new Date().getUTCMonth()]
-				output = _.template(template.toString(), data)
+				output = (_.template template.toString()) data
 				callback null, output.split("\n")
 
 

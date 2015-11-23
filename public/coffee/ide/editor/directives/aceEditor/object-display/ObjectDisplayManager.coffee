@@ -26,8 +26,8 @@ define [
         @editor.off "changeSession", onFirstInitialize
       @editor.on "changeSession", onFirstInitialize
 
-      scope.cds = open: false
-      scope.$watch "objectDisplay", (value) =>
+      @scope.cds = open: false
+      @scope.$watch "objectDisplay", (value) =>
         if value == "true" then @enable() else @disable()
 
     onChange: (event) =>
