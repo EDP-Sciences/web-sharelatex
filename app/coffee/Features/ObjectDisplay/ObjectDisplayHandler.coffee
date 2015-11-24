@@ -2,7 +2,7 @@ settings = require "settings-sharelatex"
 logger = require "logger-sharelatex"
 http = require "http"
 xml2js = require "xml2js"
-isArray = require "isarray"
+isArray = (require "underscore").isArray
 
 getData = (entry) ->
   name = if isArray entry?.oname then entry.oname[0] else entry?.oname
