@@ -18,7 +18,6 @@ SystemMessageManager = require("../SystemMessages/SystemMessageManager")
 oneMinInMs = 60 * 1000
 
 updateOpenConnetionsMetrics = ()->
-	metrics.gauge "open_connections.socketio", require("../../infrastructure/Server").io?.sockets?.clients()?.length
 	metrics.gauge "open_connections.http", _.size(require('http').globalAgent?.sockets)
 	metrics.gauge "open_connections.https", _.size(require('https').globalAgent?.sockets)
 	setTimeout updateOpenConnetionsMetrics, oneMinInMs
