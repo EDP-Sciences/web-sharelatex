@@ -109,9 +109,9 @@ module.exports = OrcidController =
         update.first_name = first_name if first_name? and not user.first_name?
         update.last_name = last_name if last_name? and not user.last_name?
         update.email = email if email? and not user.email?
-        return callback() if not _.isEmpty update
+        return callback() if _.isEmpty update
 
-        logger.info 'orcid-bio data', update
+        logger.info 'update data from orcid', update
 
         UserUpdater.updateUser user._id.toString(),
           $set:
