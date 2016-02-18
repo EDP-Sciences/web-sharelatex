@@ -150,6 +150,16 @@ aside#left-menu.full-size(
 					option(value="true") #{translate("enable")}
 					option(value="false") #{translate("disable")}
 
+			.form-controls(ng-show="permissions.write")
+				label(for="submissionTarget") #{translate("submission_target")}
+				select(
+				name="submissionTarget",
+				ng-model="project.submissionTarget",
+				)
+					option(value="none") #{translate("submission_none")}
+					option(value="aa") #{translate("submission_aa")}
+
+
 	h4 #{translate("hotkeys")}
 	ul.list-unstyled.nav
 		li(ng-controller="HotkeysController")

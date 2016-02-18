@@ -136,6 +136,8 @@
 						.col-xs-4
 							span.header.clickable(ng-click="changePredicate('lastUpdated')") #{translate("last_modified")}
 								i.tablesort.fa(ng-class="getSortIconClass('lastUpdated')")
+						.col-xs-2
+							span.header #{translate("submission_status")}
 				li.project_entry.container-fluid(
 					ng-repeat="project in visibleProjects | orderBy:predicate:reverse",
 					ng-controller="ProjectListItemController"
@@ -161,6 +163,9 @@
 							span.owner {{ownerName()}}
 						.col-xs-4
 							span.last-modified {{project.lastUpdated | formatDate}}
+						.col-xs-2
+							submissionStatus(project=project)
+
 				li(
 					ng-if="visibleProjects.length == 0",
 					ng-cloak
