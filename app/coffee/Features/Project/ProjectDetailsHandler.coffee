@@ -52,3 +52,9 @@ module.exports =
 		if project_id? && newAccessLevel? and _.include ['readOnly', 'readAndWrite', 'private'], newAccessLevel
 			Project.update {_id:project_id},{publicAccesLevel:newAccessLevel}, (err)->
 				callback()
+
+	setSubmissionTarget: (project_id, newSubmissionTarget, callback = ->) ->
+		logger.log project_id: project_id, target: newSubmissionTarget, "set submission target"
+		if project_id? && newSubmissionTarget?
+			Project.update {_id:project_id},{submissionTarget:newSubmissionTarget}, (err)->
+				callback()

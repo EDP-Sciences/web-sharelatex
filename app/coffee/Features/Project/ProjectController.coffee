@@ -16,6 +16,7 @@ SecurityManager = require("../../managers/SecurityManager")
 fs = require "fs"
 InactiveProjectManager = require("../InactiveData/InactiveProjectManager")
 ProjectUpdateHandler = require("./ProjectUpdateHandler")
+getUserSubmissions = (require "../Submission/SubmissionHandler").getUserSubmissions
 
 module.exports = ProjectController =
 
@@ -43,6 +44,10 @@ module.exports = ProjectController =
 		if req.body.publicAccessLevel?
 			jobs.push (callback) ->
 				editorController.setPublicAccessLevel project_id, req.body.publicAccessLevel, callback
+
+		if req.body.submissionTarget?
+			jobs.push (callback) ->
+				editorController.setSubmissionTarget project_id, req.body.submissionTarget, callback
 
 		async.series jobs, (error) ->
 			return next(error) if error?
@@ -127,6 +132,8 @@ module.exports = ProjectController =
 				TagsHandler.getAllTags user_id, cb
 			projects: (cb)->
 				Project.findAllUsersProjects user_id, 'name lastUpdated publicAccesLevel archived owner_ref', cb
+			submissions: (cb) ->
+				getUserSubmissions user_id, cb
 			hasSubscription: (cb)->
 				LimitationsManager.userHasSubscriptionOrIsGroupMember req.session.user, cb
 			user: (cb) ->
@@ -146,6 +153,7 @@ module.exports = ProjectController =
 						title:'your_projects'
 						priority_title: true
 						projects: projects
+						submissions: results.submissions
 						tags: tags
 						user: user
 						hasSubscription: results.hasSubscription[0]

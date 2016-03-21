@@ -102,6 +102,8 @@ module.exports =
 			url: "http://localhost:8080/json"
 		realTime:
 			url: "http://localhost:3026"
+		submit:
+			url: "http://localhost:3051"
 #		contacts:
 #			url: "http://localhost:3036"
 

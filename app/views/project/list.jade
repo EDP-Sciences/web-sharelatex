@@ -9,13 +9,8 @@ block content
 	script(type="text/javascript").
 		window.data = {
 			projects: !{JSON.stringify(projects).replace(/\//g, '\\/')},
-			tags: !{JSON.stringify(tags).replace(/\//g, '\\/')}
-		};
-		window.algolia = {
-			institutions: {
-				app_id:  '#{algolia_app_id}',
-				api_key: '#{algolia_api_key}'
-			}
+			tags: !{JSON.stringify(tags).replace(/\//g, '\\/')},
+			submissions: !{JSON.stringify(submissions || []).replace(/\//g, '\\/')}
 		};
 
 	.content.content-alt(ng-controller="ProjectPageController")

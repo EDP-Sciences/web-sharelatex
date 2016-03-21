@@ -4,6 +4,7 @@ define [
 
 	App.controller "ProjectPageController", ($scope, $modal, $q, $window, queuedHttp, event_tracking, $timeout, sixpack) ->
 		$scope.projects = window.data.projects
+		$scope.submissions = window.data.submissions
 		$scope.tags = window.data.tags
 		$scope.allSelected = false
 		$scope.selectedProjects = []
@@ -46,6 +47,21 @@ define [
 		projectsById = {}
 		for project in $scope.projects
 			projectsById[project.id] = project
+
+		for submission in $scope.submissions
+			projectsById[submission.project_id].submission = submission
+
+		for project in $scope.projects
+			project.show_submission_status = true
+			if project.submission
+				submission = project.submission
+				project.submitted = submission.status == 'submitted'
+				project.submittable = false
+				project.submission_error = submission.error if submission.status == 'failed'
+				project.submission_pending = submission.status not in ['submitted', 'failed']
+				project.submission_url = submission.url
+			else
+				project.submittable = true
 
 		for tag in $scope.tags
 			for project_id in tag.project_ids or []

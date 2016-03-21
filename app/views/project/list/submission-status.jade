@@ -1,0 +1,15 @@
+script(type='text/ng-template', id='SubmissionStatusTemplate')
+    .submissionStatus(ng-controller="SubmissionStatusController", ng-show="project.show_submission_status")
+
+        .error(ng-show="project.submission_error" title="{{project.submission_error}}") #{translate("submission_error")}
+            a.delete(href, ng-click="deleteSubmission()")
+
+        a.submit(ng-show="project.submittable", href, ng-click="submitProject()") #{translate("submission_submit")}
+
+        .pending(ng-show="project.submission_pending", title="{{project.submission_pending}}") #{translate("submission_pending")}
+
+        .submitted(ng-show="project.submitted") #{translate("submission_ready")}
+            a(ng-show="project.submission_url"
+              href="{{project.submission_url}}", target="_new") #{translate("submission_finalize")}
+
+        .finalized(ng-show="project.finalized") #{translate("submission_submitted")}

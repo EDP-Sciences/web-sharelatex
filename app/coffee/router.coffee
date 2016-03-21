@@ -38,6 +38,7 @@ ObjectDisplayRouter = require "./Features/ObjectDisplay/ObjectDisplayRouter"
 RealTimeProxyRouter = require('./Features/RealTimeProxy/RealTimeProxyRouter')
 InactiveProjectController = require("./Features/InactiveData/InactiveProjectController")
 ContactRouter = require("./Features/Contacts/ContactRouter")
+SubmissionRouter = require "./Features/Submission/SubmissionRouter"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -80,6 +81,7 @@ module.exports = class Router
 		RealTimeProxyRouter.apply(webRouter, apiRouter)
 		ContactRouter.apply(webRouter, apiRouter)
 		ObjectDisplayRouter.apply webRouter
+		SubmissionRouter.apply webRouter
 
 		Modules.applyRouter(webRouter, apiRouter)
 

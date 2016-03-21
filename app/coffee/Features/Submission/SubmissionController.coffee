@@ -1,31 +1,33 @@
 metrics = require '../../infrastructure/Metrics'
 SubmissionHandler = require './SubmissionHandler'
+logger = require "logger-sharelatex"
 
 module.exports =
-  startSubmissionProcess: (req, res, next) ->
+  startSubmission: (req, res, next) ->
     metrics.inc "start-submission"
-    project_id = req.params.project_id
-    SubmissionHandler.startSubmission req.session.user, project_id, (err) ->
+    project_id = req.params.Project_id
+    logger.log project_id:project_id, "startSubmission"
+    SubmissionHandler.startSubmission project_id, (err) ->
       next err if err?
       res.sendStatus 200
 
-  cancelSubmissionProcess: (req, res, next) ->
+  cancelSubmission: (req, res, next) ->
     metrics.inc "cancel-submission"
-    project_id = req.params.project_id
-    SubmissionHandler.cancelSubmission req.session.user, project_id, (err) ->
+    submission_id = req.params.submission_id
+    SubmissionHandler.cancelSubmission submission_id, (err) ->
       next err if err?
       res.sendStatus 200
 
-  finalizeSubmissionProcess: (req, res, next) ->
+  finalizeSubmission: (req, res, next) ->
     metrics.inc "finalize-submission"
-    project_id = req.params.project_id
-    SubmissionHandler.finalizeSubmission req.session.user, project_id, (err) ->
+    submission_id = req.params.submission_id
+    SubmissionHandler.finalizeSubmission submission_id, (err) ->
       next err if err?
       res.sendStatus 200
 
   getSubmissionStatus: (req, res, next) ->
-    project_id = req.params.project_id
-    SubmissionHandler.getSubmissionStatus req.session.user, project_id, (status, err) ->
+    project_id = req.params.Project_id
+    SubmissionHandler.getSubmissionStatus project_id, (err, status) ->
       next err if err?
       res.status 200
       .json status
