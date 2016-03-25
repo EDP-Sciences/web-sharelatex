@@ -31,3 +31,15 @@ module.exports =
       next err if err?
       res.status 200
       .json status
+
+  deleteSubmission: (req, res, next) ->
+    metrics.inc "delete-submission"
+    project_id = req.params.Project_id
+    logger.log project_id:project_id, "deleteSubmission"
+    SubmissionHandler.deleteSubmission project_id, (err, status) ->
+      if err?
+        res.status 400
+        .json error: err
+      else
+        res.status 200
+        .json status

@@ -54,14 +54,22 @@ define [
 		for project in $scope.projects
 			project.show_submission_status = true
 			if project.submission
-				submission = project.submission
-				project.submitted = submission.status == 'submitted'
 				project.submittable = false
-				project.submission_error = submission.error if submission.status == 'failed'
-				project.submission_pending = submission.status not in ['submitted', 'failed']
-				project.submission_url = submission.url
+				submission = project.submission
+				switch submission.status
+					when 'finalized'
+						project.finalized = true
+					when 'cancelled'
+						project.cancelled = true
+					when 'submitted'
+						project.submitted = true
+						project.submission_url = submission.url if project.accessLevel == "owner" and not project.archived
+					when 'failed'
+						project.submission_error = submission.error
+					else
+						project.submission_pending = true
 			else
-				project.submittable = true
+				project.submittable = project.accessLevel == "owner" and not project.archived
 
 		for tag in $scope.tags
 			for project_id in tag.project_ids or []
