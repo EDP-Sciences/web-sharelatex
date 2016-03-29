@@ -34,6 +34,8 @@ UserSchema = new Schema
 							github:        { type:Boolean, default: Settings.defaultFeatures.github }
 							compileTimeout: { type:Number, default: Settings.defaultFeatures.compileTimeout }
 							compileGroup:  { type:String,  default: Settings.defaultFeatures.compileGroup }
+							templates:     { type:Boolean, default: Settings.defaultFeatures.templates }
+							references:    { type:Boolean, default: Settings.defaultFeatures.references }
 						}
 	featureSwitches	  : {
 		pdfng: { type: Boolean }
@@ -52,32 +54,6 @@ UserSchema = new Schema
 					# For example, a user signing up directly for a paid plan
 					# has this set to true, despite never having had a free trial
 					hadFreeTrial: {type: Boolean, default: false}
-
-UserSchema.statics.getAllIds = (callback)->
-	this.find {}, ["first_name"], callback
-
-
-UserSchema.statics.findReadOnlyProjects = (user_id, callback)->
-	@find({'projects.readOnly_refs':user_id}).populate('projects.readOnly_refs').run (err, users)->
-		projects = []
-		_.each users, (user)->
-			_.each user.projects, (project)->
-				_.each project.readOnly_refs, (subUser)->
-					if(subUser._id == user_id)
-						projects.push(project)
-		callback(projects)
-
-UserSchema.statics.findCollaborationProjects = (user_id, callback)->
-	@find({'projects.collaberator_refs':user_id}).populate('projects.collaberator_refs').run (err, users)->
-		projects = []
-		_.each users, (user)->
-			_.each user.projects, (project)->
-				_.each project.collaberator_refs, (subUser)->
-					if(subUser._id == user_id)
-						projects.push(project)
-		callback(projects)
-
-
 
 conn = mongoose.createConnection(Settings.mongo.url, server: poolSize: 10)
 

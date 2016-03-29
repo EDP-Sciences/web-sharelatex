@@ -1,21 +1,46 @@
 div#trackChanges(ng-show="ui.view == 'track-changes'")
-	.upgrade-prompt(ng-show="!project.features.versioning")
-		.message(ng-show="project.owner._id == user.id")
-			p #{translate("need_to_upgrade_for_history")}
-			p(ng-controller="FreeTrialModalController")
-				a.btn(
-					href
-					ng-class="buttonClass"
-					ng-click="startFreeTrial('track-changes')"
-				) #{translate("start_free_trial")}
-				| &nbsp;&nbsp;&nbsp;
-				a.small(href, ng-click="toggleTrackChanges()") #{translate("cancel")}
-			p.small(ng-show="startedFreeTrial") #{translate("refresh_page_after_starting_free_trial")}
+	span(ng-controller="TrackChangesPremiumPopup")
+		.upgrade-prompt(ng-show="!project.features.versioning")
+			.message(ng-show="project.owner._id == user.id")
+				p.text-center: strong #{translate("upgrade_to_get_feature", {feature:"full Project History"})}
+				p.text-center.small(ng-show="startedFreeTrial") #{translate("refresh_page_after_starting_free_trial")}
+				ul.list-unstyled
+					li 
+						i.fa.fa-check &nbsp;
+						| #{translate("unlimited_projects")}
+					
+					li
+						i.fa.fa-check &nbsp;
+						| #{translate("collabs_per_proj", {collabcount:'Multiple'})}
+					
+					li 
+						i.fa.fa-check &nbsp;
+						| #{translate("full_doc_history")}
+					
+					li 
+						i.fa.fa-check &nbsp;
+						| #{translate("sync_to_dropbox")}
 
-		.message(ng-show="project.owner._id != user.id")
-			p #{translate("ask_proj_owner_to_upgrade_for_history")}
-			p
-				a.small(href, ng-click="toggleTrackChanges()") #{translate("cancel")}
+					li 
+						i.fa.fa-check &nbsp;
+						| #{translate("sync_to_github")}
+
+					li  
+						i.fa.fa-check &nbsp;
+						|#{translate("compile_larger_projects")}
+
+				p.text-center(ng-controller="FreeTrialModalController")
+					a.btn.btn-success(
+						href
+						ng-class="buttonClass"
+						ng-click="startFreeTrial('track-changes')"
+					) #{translate("start_free_trial")}
+
+
+			.message(ng-show="project.owner._id != user.id")
+				p #{translate("ask_proj_owner_to_upgrade_for_history")}
+				p
+					a.small(href, ng-click="toggleTrackChanges()") #{translate("cancel")}
 
 	aside.change-list(
 		ng-controller="TrackChangesListController"

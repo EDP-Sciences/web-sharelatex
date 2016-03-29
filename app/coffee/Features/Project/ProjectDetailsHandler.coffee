@@ -4,11 +4,12 @@ Project = require('../../models/Project').Project
 logger = require("logger-sharelatex")
 tpdsUpdateSender = require '../ThirdPartyDataStore/TpdsUpdateSender'
 _ = require("underscore")
+PublicAccessLevels = require("../Authorization/PublicAccessLevels")
 
 module.exports = 
 
 	getDetails: (project_id, callback)->
-		ProjectGetter.getProjectWithoutDocLines project_id, (err, project)->
+		ProjectGetter.getProject project_id, {name:true, description:true, compiler:true, features:true, owner_ref:true}, (err, project)->
 			if err?
 				logger.err err:err, project_id:project_id, "error getting project"
 				return callback(err)
@@ -37,7 +38,7 @@ module.exports =
 
 	renameProject: (project_id, newName, callback = ->)->
 		logger.log project_id: project_id, newName:newName, "renaming project"
-		ProjectGetter.getProject project_id, {"name":1}, (err, project)->
+		ProjectGetter.getProject project_id, {name:true}, (err, project)->
 			if err? or !project?
 				logger.err err:err,  project_id:project_id, "error getting project or could not find it todo project rename"
 				return callback(err)
@@ -49,6 +50,6 @@ module.exports =
 
 	setPublicAccessLevel : (project_id, newAccessLevel, callback = ->)->
 		logger.log project_id: project_id, level: newAccessLevel, "set public access level"
-		if project_id? && newAccessLevel? and _.include ['readOnly', 'readAndWrite', 'private'], newAccessLevel
+		if project_id? && newAccessLevel? and _.include [PublicAccessLevels.READ_ONLY, PublicAccessLevels.READ_AND_WRITE, PublicAccessLevels.PRIVATE], newAccessLevel
 			Project.update {_id:project_id},{publicAccesLevel:newAccessLevel}, (err)->
 				callback()

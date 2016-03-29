@@ -15,13 +15,15 @@ describe "CompileController", ->
 		@ClsiManager = {}
 		@UserGetter = 
 			getUser:sinon.stub()
+		@RateLimiter = {addCount:sinon.stub()}
+		@settings =
+			apis:
+				clsi:
+					url: "clsi.example.com"
+				clsi_priority:
+					url: "clsi-priority.example.com"
 		@CompileController = SandboxedModule.require modulePath, requires:
-			"settings-sharelatex": @settings =
-				apis:
-					clsi:
-						url: "clsi.example.com"
-					clsi_priority:
-						url: "clsi-priority.example.com"
+			"settings-sharelatex": @settings
 			"request": @request = sinon.stub()
 			"../../models/Project": Project: @Project = {}
 			"logger-sharelatex": @logger = { log: sinon.stub(), error: sinon.stub() }
@@ -30,6 +32,7 @@ describe "CompileController", ->
 			"../User/UserGetter":@UserGetter
 			"./ClsiManager": @ClsiManager
 			"../Authentication/AuthenticationController": @AuthenticationController = {}
+			"../../infrastructure/RateLimiter":@RateLimiter
 		@project_id = "project-id"
 		@user = 
 			features:
@@ -40,14 +43,15 @@ describe "CompileController", ->
 		@res = new MockResponse()
 
 	describe "compile", ->
+		beforeEach ->
+			@req.params =
+				Project_id: @project_id
+			@req.session = {}
+			@AuthenticationController.getLoggedInUserId = sinon.stub().callsArgWith(1, null, @user_id = "mock-user-id")
+			@CompileManager.compile = sinon.stub().callsArgWith(3, null, @status = "success", @outputFiles = ["mock-output-files"])
 
 		describe "when not an auto compile", ->
 			beforeEach ->
-				@req.params =
-					Project_id: @project_id
-				@req.session = {}
-				@AuthenticationController.getLoggedInUserId = sinon.stub().callsArgWith(1, null, @user_id = "mock-user-id")
-				@CompileManager.compile = sinon.stub().callsArgWith(3, null, @status = "success", @outputFiles = ["mock-output-files"], @output = "mock-output")
 				@CompileController.compile @req, @res, @next
 
 			it "should look up the user id", ->
@@ -74,17 +78,24 @@ describe "CompileController", ->
 
 		describe "when an auto compile", ->
 			beforeEach ->
-				@req.params =
-					Project_id: @project_id
 				@req.query =
 					auto_compile: "true"
-				@AuthenticationController.getLoggedInUserId = sinon.stub().callsArgWith(1, null, @user_id = "mock-user-id")
-				@CompileManager.compile = sinon.stub().callsArgWith(3, null, @status = "success", @outputFiles = ["mock-output-files"])
 				@CompileController.compile @req, @res, @next
 
 			it "should do the compile with the auto compile flag", ->
 				@CompileManager.compile
 					.calledWith(@project_id, @user_id, { isAutoCompile: true })
+					.should.equal true
+		
+		describe "with the draft attribute", ->
+			beforeEach ->
+				@req.body =
+					draft: true
+				@CompileController.compile @req, @res, @next
+
+			it "should do the compile without the draft compile flag", ->
+				@CompileManager.compile
+					.calledWith(@project_id, @user_id, { isAutoCompile: false, draft: true })
 					.should.equal true
 
 	describe "downloadPdf", ->
@@ -94,11 +105,13 @@ describe "CompileController", ->
 			@project =
 				getSafeProjectName: () => @safe_name = "safe-name"
 				
+			@req.query = {pdfng:true}
 			@Project.findById = sinon.stub().callsArgWith(2, null, @project)
 
 		describe "when downloading for embedding", ->
 			beforeEach ->
 				@CompileController.proxyToClsi = sinon.stub()
+				@RateLimiter.addCount.callsArgWith(1, null, true)
 				@CompileController.downloadPdf(@req, @res, @next)
 
 			it "should look up the project", ->
@@ -122,9 +135,26 @@ describe "CompileController", ->
 					.should.equal true
 
 			it "should proxy the PDF from the CLSI", ->
-				@CompileController.proxyToClsi
-					.calledWith(@project_id, "/project/#{@project_id}/output/output.pdf", @req, @res, @next)
-					.should.equal true
+				@CompileController.proxyToClsi.calledWith(@project_id, "/project/#{@project_id}/output/output.pdf", @req, @res, @next).should.equal true
+
+		describe "when the pdf is not going to be used in pdfjs viewer", ->
+
+			it "should check the rate limiter when pdfng is not set", (done)->
+				@req.query = {}
+				@RateLimiter.addCount.callsArgWith(1, null, true)
+				@CompileController.proxyToClsi = (project_id, url)=>
+					@RateLimiter.addCount.args[0][0].throttle.should.equal 1000
+					done()
+				@CompileController.downloadPdf @req, @res
+
+
+			it "should check the rate limiter when pdfng is false", (done)->
+				@req.query = {pdfng:false}
+				@RateLimiter.addCount.callsArgWith(1, null, true)
+				@CompileController.proxyToClsi = (project_id, url)=>
+					@RateLimiter.addCount.args[0][0].throttle.should.equal 1000
+					done()
+				@CompileController.downloadPdf @req, @res
 
 	describe "proxyToClsi", ->
 		beforeEach ->

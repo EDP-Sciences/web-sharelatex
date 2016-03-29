@@ -1,5 +1,8 @@
 .row
-	.col-xs-12
+	.col-xs-12(ng-cloak)
+
+
+
 		form.project-search.form-horizontal(role="form")
 			.form-group.has-feedback.has-feedback-left.col-md-7.col-xs-12
 				input.form-control.col-md-7.col-xs-12(
@@ -21,7 +24,7 @@
 			.btn-toolbar(ng-show="filter != 'archived'")
 				.btn-group(ng-hide="selectedProjects.length < 1")
 					a.btn.btn-default(
-						href='#',
+						href,
 						tooltip="#{translate('download')}",
 						tooltip-placement="bottom",
 						tooltip-append-to-body="true",
@@ -29,7 +32,7 @@
 					)
 						i.fa.fa-cloud-download
 					a.btn.btn-default(
-						href='#',
+						href,
 						tooltip="#{translate('delete')}",
 						tooltip-placement="bottom",
 						tooltip-append-to-body="true",
@@ -39,7 +42,7 @@
 
 				.btn-group.dropdown(ng-hide="selectedProjects.length < 1", dropdown)
 					a.btn.btn-default.dropdown-toggle(
-						href="#",
+						href,
 						data-toggle="dropdown",
 						dropdown-toggle,
 						tooltip="#{translate('add_to_folders')}",
@@ -55,7 +58,7 @@
 					)
 						li.dropdown-header #{translate("add_to_folder")}
 						li(
-							ng-repeat="tag in tags | filter:nonEmpty | orderBy:'name'",
+							ng-repeat="tag in tags | orderBy:'name'",
 							ng-controller="TagDropdownItemController"
 						)
 							a(href="#", ng-click="addOrRemoveProjectsFromTag()", stop-propagation="click")
@@ -69,31 +72,31 @@
 								|  {{tag.name}}
 						li.divider
 						li
-							a(href="#", ng-click="openNewTagModal()", stop-propagation="click") #{translate("create_new_folder")}
+							a(href, ng-click="openNewTagModal()", stop-propagation="click") #{translate("create_new_folder")}
 
 				.btn-group(ng-hide="selectedProjects.length != 1", dropdown).dropdown
 					a.btn.btn-default.dropdown-toggle(
-						href='#',
+						href,
 						data-toggle="dropdown",
 						dropdown-toggle
-					) #{translate("more")}
+					) #{translate("more")} 
 						span.caret
 					ul.dropdown-menu.dropdown-menu-right(role="menu")
 						li(ng-show="getFirstSelectedProject().accessLevel == 'owner'")
 							a(
-								href='#',
+								href,
 								ng-click="openRenameProjectModal()"
 							) #{translate("rename")}
 						li
 							a(
-								href='#',
+								href,
 								ng-click="openCloneProjectModal()"
 							) #{translate("make_copy")}
 
 			.btn-toolbar(ng-show="filter == 'archived'")
 				.btn-group(ng-hide="selectedProjects.length < 1")
 					a.btn.btn-default(
-						href='#',
+						href,
 						data-original-title="Restore",
 						data-toggle="tooltip",
 						data-placement="bottom",
@@ -102,7 +105,7 @@
 
 				.btn-group(ng-hide="selectedProjects.length < 1")
 					a.btn.btn-danger(
-						href='#',
+						href,
 						data-original-title="Delete Forever",
 						data-toggle="tooltip",
 						data-placement="bottom",
@@ -165,6 +168,7 @@
 					.row
 						.col-xs-12.text-centered
 							small #{translate("no_projects")}
+
 			div.welcome.text-centered(ng-if="projects.length == 0", ng-cloak)
 				h2 #{translate("welcome_to_ws")}
 				p #{translate("new_to_latex_look_at")} 
@@ -172,3 +176,5 @@
 					| ,
 					br 
 					|  #{translate("or_create_project_left")}
+
+							

@@ -23,9 +23,9 @@ for path in [
 	"#{jsPath}main.js",
 	"#{jsPath}libs.js",
 	"#{jsPath}ace/ace.js",
-	"#{jsPath}libs/pdfjs-1.0.1040/pdf.js",
-	"#{jsPath}libs/pdfjs-1.0.1040/pdf.worker.js",
-	"#{jsPath}libs/pdfjs-1.0.1040/compatibility.js",
+	"#{jsPath}libs/pdfjs-1.3.91/pdf.js",
+	"#{jsPath}libs/pdfjs-1.3.91/pdf.worker.js",
+	"#{jsPath}libs/pdfjs-1.3.91/compatibility.js",
 	"/stylesheets/style.css"
 ]
 	filePath = Path.join __dirname, "../../../", "public#{path}"
@@ -65,6 +65,12 @@ module.exports = (app, webRouter, apiRouter)->
 		next()
 
 	webRouter.use (req, res, next)->
+		res.locals.getUserEmail = ->
+			email = req?.session?.user?.email or ""
+			return email
+		next()
+
+	webRouter.use (req, res, next)->
 		res.locals.formatProjectPublicAccessLevel = (privilegeLevel)->
 			formatedPrivileges = private:"Private", readOnly:"Public: Read Only", readAndWrite:"Public: Read and Write"
 			return formatedPrivileges[privilegeLevel] || "Private"
@@ -92,6 +98,9 @@ module.exports = (app, webRouter, apiRouter)->
 			if req.query.redir?
 				return "?#{querystring.stringify(redir: req.query.redir)}"
 			return ""
+
+		res.locals.getLoggedInUserId = ->
+			return req.session.user?._id
 		next()
 
 	webRouter.use (req, res, next) ->
@@ -140,7 +149,10 @@ module.exports = (app, webRouter, apiRouter)->
 		next()
 
 	webRouter.use (req, res, next) ->
-		res.locals.nav = Settings.nav
+		# Clone the nav settings so they can be modified for each request
+		res.locals.nav = {}
+		for key, value of Settings.nav
+			res.locals.nav[key] = _.clone(Settings.nav[key])
 		res.locals.templates = Settings.templateLinks
 		next()
 		
@@ -166,4 +178,5 @@ module.exports = (app, webRouter, apiRouter)->
 		res.locals.moduleIncludes = Modules.moduleIncludes
 		res.locals.moduleIncludesAvailable = Modules.moduleIncludesAvailable
 		next()
+
 

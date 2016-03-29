@@ -2,17 +2,27 @@ define [
 	"base"
 ], (App) ->
 
-	App.controller "ProjectPageController", ($scope, $modal, $q, $window, queuedHttp, event_tracking, $timeout) ->
+	App.controller "ProjectPageController", ($scope, $modal, $q, $window, queuedHttp, event_tracking, $timeout, sixpack) ->
 		$scope.projects = window.data.projects
 		$scope.tags = window.data.tags
+		$scope.notifications = window.data.notifications
 		$scope.allSelected = false
 		$scope.selectedProjects = []
 		$scope.filter = "all"
 		$scope.predicate = "lastUpdated"
 		$scope.reverse = true
 
+		if $scope.projects.length > 0
+			$scope.first_sign_up = "default"
+		else
+			sixpack.participate 'first_sign_up', ['default', 'minimial'], (chosenVariation, rawResponse)->
+				$scope.first_sign_up = chosenVariation
+				$timeout () ->
+					recalculateProjectListHeight()
+				, 10
+
 		recalculateProjectListHeight = () ->
-			topOffset = $(".project-list-card").offset().top
+			topOffset = $(".project-list-card")?.offset()?.top
 			bottomOffset = $("footer").outerHeight() + 25
 			sideBarHeight = $("aside").height() - 56
 			# When footer is visible and page doesn't need to scroll we just make it
@@ -28,9 +38,7 @@ define [
 				height = Math.min(sideBarHeight, $window.innerHeight - topOffset - 25)
 			$scope.projectListHeight = height
 		
-		$timeout () ->
-			recalculateProjectListHeight()
-		, 0
+
 		angular.element($window).bind "resize", () ->
 			recalculateProjectListHeight()
 			$scope.$apply()
@@ -162,10 +170,12 @@ define [
 					project.tags.splice(index, 1)
 
 			for project_id in removed_project_ids
-				queuedHttp.post "/project/#{project_id}/tag", {
-					deletedTag: tag.name
-					_csrf: window.csrfToken
-				}
+				queuedHttp({
+					method: "DELETE"
+					url: "/tag/#{tag._id}/project/#{project_id}"
+					headers:
+						"X-CSRF-Token": window.csrfToken
+				})
 
 			# If we're filtering by this tag then we need to remove
 			# the projects from view
@@ -189,18 +199,11 @@ define [
 					project.tags.push tag
 
 			for project_id in added_project_ids
-				queuedHttp.post "/project/#{project_id}/tag", {
-					tag: tag.name
+				queuedHttp.post "/tag/#{tag._id}/project/#{project_id}", {
 					_csrf: window.csrfToken
 				}
 
 		$scope.createTag = (name) ->
-			event_tracking.send 'project-list-page-interaction', 'project action', 'createTag'
-			$scope.tags.push tag = {
-				name: name
-				project_ids: []
-				showWhenEmpty: true
-			}
 			return tag
 
 		$scope.openNewTagModal = (e) ->
@@ -210,8 +213,8 @@ define [
 			)
 
 			modalInstance.result.then(
-				(newTagName) ->
-					tag = $scope.createTag(newTagName)
+				(tag) ->
+					$scope.tags.push tag
 					$scope.addSelectedProjectsToTag(tag)
 			)
 
@@ -254,9 +257,11 @@ define [
 			modalInstance.result.then (project_id) ->
 				window.location = "/project/#{project_id}"
 
+		MAX_PROJECT_NAME_LENGTH = 150
 		$scope.renameProject = (project, newName) ->
-			if newName.length < 150
-				project.name = newName
+			if !newName? or newName.length == 0 or newName.length > MAX_PROJECT_NAME_LENGTH
+				return
+			project.name = newName
 			queuedHttp.post "/project/#{project.id}/rename", {
 				newProjectName: project.name
 				_csrf: window.csrfToken
@@ -335,6 +340,7 @@ define [
 				$scope._removeProjectIdsFromTagArray(tag, selected_project_ids)
 
 			for project in selected_projects
+				project.tags = []
 				if project.accessLevel == "owner"
 					project.archived = true
 					queuedHttp {

@@ -1,50 +1,20 @@
 logger = require('logger-sharelatex')
 Metrics = require('../../infrastructure/Metrics')
 sanitize = require('sanitizer')
-ProjectEditorHandler = require('../Project/ProjectEditorHandler')
 ProjectEntityHandler = require('../Project/ProjectEntityHandler')
 ProjectOptionsHandler = require('../Project/ProjectOptionsHandler')
 ProjectDetailsHandler = require('../Project/ProjectDetailsHandler')
 ProjectDeleter = require("../Project/ProjectDeleter")
-CollaboratorsHandler = require("../Collaborators/CollaboratorsHandler")
 DocumentUpdaterHandler = require('../DocumentUpdater/DocumentUpdaterHandler')
-LimitationsManager = require("../Subscription/LimitationsManager")
 EditorRealTimeController = require("./EditorRealTimeController")
 TrackChangesManager = require("../TrackChanges/TrackChangesManager")
-Settings = require('settings-sharelatex')
 async = require('async')
 LockManager = require("../../infrastructure/LockManager")
 _ = require('underscore')
-redis = require("redis-sharelatex")
-rclientPub = redis.createClient(Settings.redis.web)
-rclientSub = redis.createClient(Settings.redis.web)
 
 module.exports = EditorController =
-	addUserToProject: (project_id, email, privileges, callback = (error, collaborator_added)->)->
-		email = email.toLowerCase()
-		LimitationsManager.isCollaboratorLimitReached project_id, (error, limit_reached) =>
-			if error?
-				logger.error err:error, "error adding user to to project when checking if collaborator limit has been reached"
-				return callback(new Error("Something went wrong"))
-
-			if limit_reached
-				callback null, false
-			else
-				CollaboratorsHandler.addUserToProject project_id, email, privileges, (err, user)=>
-					return callback(err) if error?
-					# Flush to TPDS to add files to collaborator's Dropbox
-					ProjectEntityHandler.flushProjectToThirdPartyDataStore project_id, ->
-					EditorRealTimeController.emitToRoom(project_id, 'userAddedToProject', user, privileges)
-					callback null, ProjectEditorHandler.buildUserModelView(user, privileges)
-
-	removeUserFromProject: (project_id, user_id, callback = (error) ->)->
-		CollaboratorsHandler.removeUserFromProject project_id, user_id, (error) =>
-			return callback(error) if error?
-			EditorRealTimeController.emitToRoom(project_id, 'userRemovedFromProject', user_id)
-			callback()
-
-	setDoc: (project_id, doc_id, docLines, source, callback = (err)->)->
-		DocumentUpdaterHandler.setDocument project_id, doc_id, docLines, source, (err)=>
+	setDoc: (project_id, doc_id, user_id, docLines, source, callback = (err)->)->
+		DocumentUpdaterHandler.setDocument project_id, doc_id, user_id, docLines, source, (err)=>
 			logger.log project_id:project_id, doc_id:doc_id, "notifying users that the document has been updated"
 			DocumentUpdaterHandler.flushDocToMongo project_id, doc_id, callback
 
@@ -63,9 +33,11 @@ module.exports = EditorController =
 		logger.log {project_id, folder_id, docName, source}, "sending new doc to project"
 		Metrics.inc "editor.add-doc"
 		ProjectEntityHandler.addDoc project_id, folder_id, docName, docLines, (err, doc, folder_id)=>
+			if err?
+				logger.err err:err, project_id:project_id, docName:docName, "error adding doc without lock"
+				return callback(err)
 			EditorRealTimeController.emitToRoom(project_id, 'reciveNewDoc', folder_id, doc, source)
 			callback(err, doc)
-
 
 	addFile: (project_id, folder_id, fileName, path, source, callback = (error, file)->)->
 		LockManager.getLock project_id, (err)->
@@ -76,19 +48,19 @@ module.exports = EditorController =
 				LockManager.releaseLock project_id, ->
 					callback(error, file)	
 
-
 	addFileWithoutLock: (project_id, folder_id, fileName, path, source, callback = (error, file)->)->
 		fileName = fileName.trim()
 		logger.log {project_id, folder_id, fileName, path}, "sending new file to project"
 		Metrics.inc "editor.add-file"
 		ProjectEntityHandler.addFile project_id, folder_id, fileName, path, (err, fileRef, folder_id)=>
+			if err?
+				logger.err err:err, project_id:project_id, folder_id:folder_id, fileName:fileName, "error adding file without lock"
+				return callback(err)
 			EditorRealTimeController.emitToRoom(project_id, 'reciveNewFile', folder_id, fileRef, source)
 			callback(err, fileRef)
 
 	replaceFile: (project_id, file_id, fsPath, source, callback = (error) ->)->
 		ProjectEntityHandler.replaceFile project_id, file_id, fsPath, callback
-
-
 
 	addFolder : (project_id, folder_id, folderName, source, callback = (error, folder)->)->
 		LockManager.getLock project_id, (err)->
@@ -104,6 +76,9 @@ module.exports = EditorController =
 		logger.log {project_id, folder_id, folderName, source}, "sending new folder to project"
 		Metrics.inc "editor.add-folder"
 		ProjectEntityHandler.addFolder project_id, folder_id, folderName, (err, folder, folder_id)=>
+			if err?
+				logger.err err:err, project_id:project_id, folder_id:folder_id, folderName:folderName, "error adding folder without lock"
+				return callback(err)
 			@p.notifyProjectUsersOfNewFolder project_id, folder_id, folder, (error) ->
 				callback error, folder
 
@@ -120,6 +95,9 @@ module.exports = EditorController =
 	mkdirpWithoutLock: (project_id, path, callback)->
 		logger.log project_id:project_id, path:path, "making directories if they don't exist"
 		ProjectEntityHandler.mkdirp project_id, path, (err, newFolders, lastFolder)=>
+			if err?
+				logger.err err:err, project_id:project_id, path:path, "error mkdirp without lock"
+				return callback(err)
 			self = @
 			jobs = _.map newFolders, (folder, index)->
 				return (cb)->
@@ -139,7 +117,10 @@ module.exports = EditorController =
 	deleteEntityWithoutLock: (project_id, entity_id, entityType, source, callback)->
 		logger.log {project_id, entity_id, entityType, source}, "start delete process of entity"
 		Metrics.inc "editor.delete-entity"
-		ProjectEntityHandler.deleteEntity project_id, entity_id, entityType, =>
+		ProjectEntityHandler.deleteEntity project_id, entity_id, entityType, (err)->
+			if err?
+				logger.err err:err, project_id:project_id, entity_id:entity_id, entityType:entityType, "error deleting entity"
+				return callback(err)
 			logger.log project_id:project_id, entity_id:entity_id, entityType:entityType, "telling users entity has been deleted"
 			EditorRealTimeController.emitToRoom(project_id, 'removeEntity', entity_id, source)
 			if callback?
@@ -173,19 +154,33 @@ module.exports = EditorController =
 		newName = sanitize.escape(newName)
 		Metrics.inc "editor.rename-entity"
 		logger.log entity_id:entity_id, entity_id:entity_id, entity_id:entity_id, "reciving new name for entity for project"
-		ProjectEntityHandler.renameEntity project_id, entity_id, entityType, newName, =>
+		ProjectEntityHandler.renameEntity project_id, entity_id, entityType, newName, ->
+			if err?
+				logger.err err:err, project_id:project_id, entity_id:entity_id, entityType:entityType, newName:newName, "error renaming entity"
+				return callback(err)
 			if newName.length > 0
 				EditorRealTimeController.emitToRoom project_id, 'reciveEntityRename', entity_id, newName
 				callback?()
-#
+
 	moveEntity: (project_id, entity_id, folder_id, entityType, callback)->
 		Metrics.inc "editor.move-entity"
-		ProjectEntityHandler.moveEntity project_id, entity_id, folder_id, entityType, =>
-			EditorRealTimeController.emitToRoom project_id, 'reciveEntityMove', entity_id, folder_id
-			callback?()
+		LockManager.getLock project_id, (err)->
+			if err?
+				logger.err err:err, project_id:project_id, "could not get lock for move entity"
+				return callback(err)
+			ProjectEntityHandler.moveEntity project_id, entity_id, folder_id, entityType, =>
+				if err?
+					logger.err err:err, project_id:project_id, entity_id:entity_id, folder_id:folder_id, "error moving entity"
+					return callback(err)
+				LockManager.releaseLock project_id, ->
+					EditorRealTimeController.emitToRoom project_id, 'reciveEntityMove', entity_id, folder_id
+					callback?()
 
 	renameProject: (project_id, newName, callback = (err) ->) ->
-		ProjectDetailsHandler.renameProject project_id, newName, =>
+		ProjectDetailsHandler.renameProject project_id, newName, ->
+			if err?
+				logger.err err:err, project_id:project_id, newName:newName, "error renaming project"
+				return callback(err)
 			EditorRealTimeController.emitToRoom project_id, 'projectNameUpdated', newName
 			callback()
 

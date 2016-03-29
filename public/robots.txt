@@ -1,18 +1,4 @@
 # robots.txt for https://writingstudio.edpsciences.org/
 
 User-agent: *
-Disallow: /project/*
-Disallow: /recurly.com
-Allow: /
-
-User-Agent: AhrefsBot
-Disallow: /
-
-User-Agent: XoviBot
-Disallow: /
-
-User-Agent: RankSonicBot
-Disallow: /
-
-User-Agent: SMTBot
 Disallow: /

@@ -36,6 +36,7 @@ define [
 			@doc?.detachFromAce()
 			editorDoc = @ace?.getSession().getDocument()
 			editorDoc?.off "change", @_checkConsistency
+			@ide.$scope.$emit 'document:closed', @doc
 
 		_checkConsistency: () ->
 			# We've been seeing a lot of errors when I think there shouldn't be
@@ -116,6 +117,26 @@ define [
 		flush: () ->
 			@doc?.flushPendingOps()
 
+		chaosMonkey: (line = 0, char = "a") ->
+			orig = char
+			copy = null
+			pos = 0
+			timer = () =>
+				unless copy? and copy.length
+					copy = orig.slice() + ' ' + new Date() + '\n'
+					line += if Math.random() > 0.1 then 1 else -2
+					line = 0 if line < 0
+					pos = 0
+				char = copy[0]
+				copy = copy.slice(1)
+				@ace.session.insert({row: line, column: pos}, char)
+				pos += 1
+				@_cm = setTimeout timer, 100 + if Math.random() < 0.1 then 1000 else 0
+			@_cm = timer()
+
+		clearChaosMonkey: () ->
+			clearTimeout @_cm
+
 		pollSavedStatus: () ->
 			# returns false if doc has ops waiting to be acknowledged or
 			# sent that haven't changed since the last time we checked.
@@ -150,14 +171,16 @@ define [
 				wantToBeJoined: @wantToBeJoined
 				update: update
 
-			if Math.random() < (@ide.disconnectRate or 0)
-				console.log "Simulating disconnect"
-				@ide.connectionManager.disconnect()
+			if window.disconnectOnAck? and Math.random() < window.disconnectOnAck
+				console.log "Disconnecting on ack", update
+				window._ide.socket.socket.disconnect()
+				# Pretend we never received the ack
 				return
 
-			if Math.random() < (@ide.ignoreRate or 0)
-				console.log "Simulating lost update"
-				return
+			if window.dropAcks? and Math.random() < window.dropAcks
+				if !update.op? # Only drop our own acks, not collaborator updates
+					console.log "Simulating a lost ack", update
+					return
 
 			if update?.doc == @doc_id and @doc?
 				@doc.processUpdateFromServer update
@@ -240,8 +263,7 @@ define [
 					doc_id: @doc_id
 					op: op
 				@trigger "op:timeout"
-				ga?('send', 'event', 'error', "op timeout", "Op was now acknowledged - #{@ide.socket.socket.transport.name}" )
-				@ide.connectionManager.reconnectImmediately()
+				@_onError new Error("op timed out"), {op: op}
 			@doc.on "flush", (inflightOp, pendingOp, version) =>
 				@ide.pushEvent "flush",
 					doc_id: @doc_id,
@@ -250,11 +272,9 @@ define [
 					v: version
 
 		_onError: (error, meta = {}) ->
+			meta.doc_id = @doc_id
 			console.error "ShareJS error", error, meta
 			ga?('send', 'event', 'error', "shareJsError", "#{error.message} - #{@ide.socket.socket.transport.name}" )
-			@ide.socket.disconnect()
-			meta.doc_id = @doc_id
-			@ide.reportError(error, meta)
 			@doc?.clearInflightAndPendingOps()
 			@_cleanUp()
-			@trigger "error", error
+			@trigger "error", error, meta

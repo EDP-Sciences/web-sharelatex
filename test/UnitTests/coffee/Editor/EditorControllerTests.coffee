@@ -33,10 +33,8 @@ describe "EditorController", ->
 			setSpellCheckLanguage: sinon.spy()
 		@ProjectEntityHandler = 
 			flushProjectToThirdPartyDataStore:sinon.stub()
-		@ProjectEditorHandler = {}
 		@Project =
 			findPopulatedById: sinon.stub().callsArgWith(1, null, @project)
-		@LimitationsManager = {}
 		@client = new MockClient()
 
 		@settings = 
@@ -56,14 +54,12 @@ describe "EditorController", ->
 			releaseLock : sinon.stub()
 		@EditorController = SandboxedModule.require modulePath, requires:
 			"../../infrastructure/Server" : io : @io
-			'../Project/ProjectEditorHandler' : @ProjectEditorHandler
 			'../Project/ProjectEntityHandler' : @ProjectEntityHandler
 			'../Project/ProjectOptionsHandler' : @ProjectOptionsHandler
 			'../Project/ProjectDetailsHandler': @ProjectDetailsHandler
 			'../Project/ProjectDeleter' : @ProjectDeleter
 			'../Collaborators/CollaboratorsHandler': @CollaboratorsHandler
 			'../DocumentUpdater/DocumentUpdaterHandler' : @DocumentUpdaterHandler
-			'../Subscription/LimitationsManager' : @LimitationsManager
 			'../../models/Project' : Project: @Project
 			"settings-sharelatex":@settings
 			'../Dropbox/DropboxProjectLinker':@dropboxProjectLinker
@@ -75,67 +71,6 @@ describe "EditorController", ->
 			"logger-sharelatex": @logger =
 				log: sinon.stub()
 				err: sinon.stub()
-
-	describe "addUserToProject", ->
-		beforeEach ->
-			@email = "Jane.Doe@example.com"
-			@priveleges = "readOnly"
-			@addedUser = { _id: "added-user" }
-			@ProjectEditorHandler.buildUserModelView = sinon.stub().returns(@addedUser)
-			@CollaboratorsHandler.addUserToProject = sinon.stub().callsArgWith(3, null, @addedUser)
-			@EditorRealTimeController.emitToRoom = sinon.stub()
-			@callback = sinon.stub()
-
-		describe "when the project can accept more collaborators", ->
-			beforeEach ->
-				@LimitationsManager.isCollaboratorLimitReached = sinon.stub().callsArgWith(1, null, false)
-
-			it "should add the user to the project", (done)->
-				@EditorController.addUserToProject @project_id, @email, @priveleges, =>
-					@CollaboratorsHandler.addUserToProject.calledWith(@project_id, @email.toLowerCase(), @priveleges).should.equal true
-					done()
-
-			it "should emit a userAddedToProject event", (done)->
-				@EditorController.addUserToProject @project_id, @email, @priveleges, =>
-					@EditorRealTimeController.emitToRoom.calledWith(@project_id, "userAddedToProject", @addedUser).should.equal true
-					done()
-
-			it "should return the user to the callback", (done)->
-				@EditorController.addUserToProject @project_id, @email, @priveleges, (err, result)=>
-					result.should.equal @addedUser
-					done()
-
-
-		describe "when the project cannot accept more collaborators", ->
-			beforeEach ->
-				@LimitationsManager.isCollaboratorLimitReached = sinon.stub().callsArgWith(1, null, true)
-				@EditorController.addUserToProject(@project_id, @email, @priveleges, @callback)
-
-			it "should not add the user to the project", ->
-				@CollaboratorsHandler.addUserToProject.called.should.equal false
-
-			it "should not emit a userAddedToProject event", ->
-				@EditorRealTimeController.emitToRoom.called.should.equal false
-
-			it "should return false to the callback", ->
-				@callback.calledWith(null, false).should.equal true
-
-
-	describe "removeUserFromProject", ->
-		beforeEach ->
-			@removed_user_id = "removed-user-id"
-			@CollaboratorsHandler.removeUserFromProject = sinon.stub().callsArgWith(2)
-			@EditorRealTimeController.emitToRoom = sinon.stub()
-
-			@EditorController.removeUserFromProject(@project_id, @removed_user_id)
-
-		it "remove the user from the project", ->
-			@CollaboratorsHandler.removeUserFromProject
-				.calledWith(@project_id, @removed_user_id)
-				.should.equal true
-
-		it "should emit a userRemovedFromProject event", ->
-			@EditorRealTimeController.emitToRoom.calledWith(@project_id, "userRemovedFromProject", @removed_user_id).should.equal true
 
 	describe "updating compiler used for project", ->
 		it "should send the new compiler and project id to the project options handler", (done)->
@@ -163,23 +98,23 @@ describe "EditorController", ->
 		beforeEach ->
 			@docLines = ["foo", "bar"]
 			@DocumentUpdaterHandler.flushDocToMongo = sinon.stub().callsArg(2)
-			@DocumentUpdaterHandler.setDocument = sinon.stub().callsArg(4)
+			@DocumentUpdaterHandler.setDocument = sinon.stub().callsArg(5)
 
 		it 'should send the document to the documentUpdaterHandler', (done)->
-			@DocumentUpdaterHandler.setDocument = sinon.stub().withArgs(@project_id, @doc_id, @docLines, @source).callsArg(4)
-			@EditorController.setDoc @project_id, @doc_id, @docLines, @source, (err)->
+			@DocumentUpdaterHandler.setDocument = sinon.stub().withArgs(@project_id, @doc_id, @user_id, @docLines, @source).callsArg(5)
+			@EditorController.setDoc @project_id, @doc_id, @user_id, @docLines, @source, (err)->
 				done()
 
 		it 'should send the new doc lines to the doucment updater', (done)->
 			@DocumentUpdaterHandler.setDocument = ->
-			mock = sinon.mock(@DocumentUpdaterHandler).expects("setDocument").withArgs(@project_id, @doc_id, @docLines, @source).once().callsArg(4)
+			mock = sinon.mock(@DocumentUpdaterHandler).expects("setDocument").withArgs(@project_id, @doc_id, @user_id, @docLines, @source).once().callsArg(5)
 
-			@EditorController.setDoc @project_id, @doc_id, @docLines, @source, (err)=>
+			@EditorController.setDoc @project_id, @doc_id, @user_id, @docLines, @source, (err)=>
 				mock.verify()
 				done()
 
 		it 'should flush the doc to mongo', (done)->
-			@EditorController.setDoc @project_id, @doc_id, @docLines, @source, (err)=>
+			@EditorController.setDoc @project_id, @doc_id, @user_id, @docLines, @source, (err)=>
 				@DocumentUpdaterHandler.flushDocToMongo.calledWith(@project_id, @doc_id).should.equal true
 				done()
 
@@ -583,12 +518,23 @@ describe "EditorController", ->
 			@folder_id = "313dasd21dasdsa"
 			@ProjectEntityHandler.moveEntity = sinon.stub().callsArgWith(4, @err)
 			@EditorRealTimeController.emitToRoom = sinon.stub()
+			@LockManager.releaseLock.callsArgWith(1)
+			@LockManager.getLock.callsArgWith(1)
 
 		it "should call the ProjectEntityHandler", (done)->
 			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>
 				@ProjectEntityHandler.moveEntity.calledWith(@project_id, @entity_id, @folder_id, @entityType).should.equal true
 				done()
 
+		it "should take the lock", (done)->
+			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>
+				@LockManager.getLock.calledWith(@project_id).should.equal true
+				done()
+
+		it "should release the lock", (done)->
+			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>
+				@LockManager.releaseLock.calledWith(@project_id).should.equal true
+				done()
 
 		it "should emit the update to the room", (done)->
 			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>

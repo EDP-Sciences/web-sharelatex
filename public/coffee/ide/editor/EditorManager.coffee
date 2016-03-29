@@ -86,13 +86,22 @@ define [
 				@_bindToDocumentEvents(doc, new_sharejs_doc)
 				callback null, new_sharejs_doc
 
+
 		_bindToDocumentEvents: (doc, sharejs_doc) ->
-			sharejs_doc.on "error", (error) =>
+			sharejs_doc.on "error", (error, meta) =>
+				if error?.message?.match "maxDocLength"
+					@ide.showGenericMessageModal(
+						"Document Too Long"
+						"Sorry, this file is too long to be edited manually. Please upload it directly."
+					)
+				else
+					@ide.socket.disconnect()
+					@ide.reportError(error, meta)
+					@ide.showGenericMessageModal(
+						"Out of sync"
+						"Sorry, this file has gone out of sync and we need to do a full refresh. <br> <a href='http://sharelatex.tenderapp.com/help/kb/browsers/editor-out-of-sync-problems'>Please see this help guide for more information</a>"
+					)
 				@openDoc(doc, forceReopen: true)
-				@ide.showGenericMessageModal(
-					"Out of sync"
-					"Sorry, this file has gone out of sync and we need to do a full refresh. Please let us know if this happens frequently."
-				)
 
 			sharejs_doc.on "externalUpdate", (update) =>
 				return if @_ignoreExternalUpdates
