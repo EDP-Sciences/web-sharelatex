@@ -30,6 +30,7 @@ describe "LimitationsManager", ->
 			'../../models/User' : User: @User
 			'./SubscriptionLocator':@SubscriptionLocator
 			'settings-sharelatex' : @Settings = {}
+			"../Collaborators/CollaboratorsHandler": @CollaboratorsHandler = {}
 			'logger-sharelatex':log:->
 
 	describe "allowedNumberOfCollaboratorsInProject", ->
@@ -52,21 +53,14 @@ describe "LimitationsManager", ->
 
 			it "should return the number of collaborators the user is allowed", ->
 				@callback.calledWith(null, @user.features.collaborators).should.equal true
-	
-	describe "currentNumberOfCollaboratorsInProject", ->
-		beforeEach ->
-			@project.collaberator_refs = ["one", "two"]
-			@project.readOnly_refs = ["three"]
-			@callback = sinon.stub()
-			@LimitationsManager.currentNumberOfCollaboratorsInProject(@project_id, @callback)
-
-		it "should return the total number of collaborators", ->
-			@callback.calledWith(null, 3).should.equal true
 
 	describe "canAddXCollaborators", ->
 		beforeEach ->
-			@LimitationsManager.currentNumberOfCollaboratorsInProject = sinon.stub()
-			@LimitationsManager.allowedNumberOfCollaboratorsInProject = sinon.stub()
+			@CollaboratorsHandler.getCollaboratorCount = (project_id, callback) => callback(null, @current_number)
+			sinon.stub @LimitationsManager,
+					   "allowedNumberOfCollaboratorsInProject",
+					   (project_id, callback) => callback(null, @allowed_number)
+			@callback = sinon.stub()
 
 		describe "when the project has fewer collaborators than allowed", ->
 

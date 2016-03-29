@@ -102,9 +102,15 @@ module.exports =
 			url: "http://localhost:8080/json"
 		realTime:
 			url: "http://localhost:3026"
-#		contacts:
-#			url: "http://localhost:3036"
-
+		contacts:
+			url: "http://localhost:3036"
+		sixpack:
+			url: ""
+		references:
+			url: "http://localhost:3040"
+		notifications:
+			url: "http://localhost:3042" 
+			
 	templates:
 		user_id: process.env.TEMPLATES_USER_ID or "5395eb7aad1f29a88756c7f2"
 		showSocialButtons: false
@@ -115,14 +121,17 @@ module.exports =
 	siteUrl : siteUrl = 'http://localhost:3000'
 
 	# cookie domain
-	# use full domain for cookies to only be accesabble from that domain,
-	# replace subdomain with dot to have them accessable on all subdomains
+	# use full domain for cookies to only be accessible from that domain,
+	# replace subdomain with dot to have them accessible on all subdomains
 	# cookieDomain: ".sharelatex.dev"
 	cookieName:"sharelatex.sid"
 
 	# Same, but with http auth credentials.
 	httpAuthSiteUrl: 'http://#{httpAuthUser}:#{httpAuthPass}@localhost:3000'
 
+
+	maxEntitiesPerProject: 2000
+	
 	# Security
 	# --------
 	security:
@@ -141,6 +150,8 @@ module.exports =
 		versioning: true
 		compileTimeout: 60
 		compileGroup: "standard"
+		references: true
+		templates: true
 
 	plans: plans = [{
 		planCode: "personal"
@@ -248,11 +259,11 @@ module.exports =
 	
 	# Should we allow access to any page without logging in? This includes
 	# public projects, /learn, /templates, about pages, etc.
-	allowPublicAccess: false
-
+	allowPublicAccess: if process.env["SHARELATEX_ALLOW_PUBLIC_ACCESS"] == 'true' then true else false
+	
 	# Maximum size of text documents in the real-time editing system.
 	max_doc_length: 2 * 1024 * 1024 # 2mb
-
+	
 	# Internal configs
 	# ----------------
 	path:
@@ -293,9 +304,9 @@ module.exports =
 		title: "ShareLaTeX Community Edition"
 		
 		left_footer: [{
-			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2015"
+			text: "Powered by <a href='https://www.sharelatex.com'>ShareLaTeX</a> © 2016"
 		}, {
-			text: "Adaptations by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2015"
+			text: "Adaptations by <a href='http://publications.edpsciences.org'>EDP Sciences</a> © 2016"
 		}]
 
 		right_footer: [{

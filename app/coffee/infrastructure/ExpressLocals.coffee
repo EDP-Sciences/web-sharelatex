@@ -23,9 +23,9 @@ for path in [
 	"#{jsPath}main.js",
 	"#{jsPath}libs.js",
 	"#{jsPath}ace/ace.js",
-	"#{jsPath}libs/pdfjs-1.0.1040/pdf.js",
-	"#{jsPath}libs/pdfjs-1.0.1040/pdf.worker.js",
-	"#{jsPath}libs/pdfjs-1.0.1040/compatibility.js",
+	"#{jsPath}libs/pdfjs-1.3.91/pdf.js",
+	"#{jsPath}libs/pdfjs-1.3.91/pdf.worker.js",
+	"#{jsPath}libs/pdfjs-1.3.91/compatibility.js",
 	"/stylesheets/style.css"
 	"/stylesheets/login-page.css"
 ]
@@ -63,6 +63,12 @@ module.exports = (app, webRouter, apiRouter)->
 	webRouter.use (req, res, next)->
 		res.locals.getSiteHost = ->
 			Settings.siteUrl.substring(Settings.siteUrl.indexOf("//")+2)
+		next()
+
+	webRouter.use (req, res, next)->
+		res.locals.getUserEmail = ->
+			email = req?.session?.user?.email or ""
+			return email
 		next()
 
 	webRouter.use (req, res, next)->

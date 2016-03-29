@@ -10,12 +10,16 @@ describe "FileStoreHandler", ->
 	beforeEach ->
 		@fs =
 			createReadStream : sinon.stub()
+			lstat: sinon.stub().callsArgWith(1, null, {
+				isFile:=> @isSafeOnFileSystem
+				isDirectory:-> return false
+			})
 		@writeStream =
 			my:"writeStream"
 			on: (type, cb)-> 
 				if type == "end"
 					cb()
-		@readStream = {my:"readStream"}
+		@readStream = {my:"readStream", on: sinon.stub()}
 		@request = sinon.stub()
 		@settings = apis:{filestore:{url:"http//filestore.sharelatex.test"}}
 		@handler = SandboxedModule.require modulePath, requires:
@@ -31,6 +35,7 @@ describe "FileStoreHandler", ->
 	describe "uploadFileFromDisk", ->
 		beforeEach ->
 			@request.returns(@writeStream)
+			@isSafeOnFileSystem = true
 
 		it "should create read stream", (done)->
 			@fs.createReadStream.returns 
@@ -74,6 +79,13 @@ describe "FileStoreHandler", ->
 				@handler._buildUrl.calledWith(@project_id, @file_id).should.equal true
 				done()
 
+		describe "symlink", ->
+			it "should not read file if it is symlink", (done)->
+				@isSafeOnFileSystem = false
+				@handler.uploadFileFromDisk @project_id, @file_id, @fsPath, =>
+					@fs.createReadStream.called.should.equal false
+					done()
+
 	describe "deleteFile", ->
 
 		it "should send a delete request to filestore api", (done)->
@@ -116,6 +128,12 @@ describe "FileStoreHandler", ->
 			@handler.getFileStream @project_id, @file_id, {}, (err, stream)=>
 				@handler._buildUrl.calledWith(@project_id, @file_id).should.equal true
 				done()
+		
+		it "should add an error handler", (done) ->
+			@handler.getFileStream @project_id, @file_id, {}, (err, stream)=>
+				stream.on.calledWith("error").should.equal true
+				done()
+			
 
 	describe "copyFile", ->
 

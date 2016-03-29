@@ -109,7 +109,7 @@ define [
 
 		$scope.makePublic = () ->
 			$scope.project.publicAccesLevel = $scope.inputs.privileges
-			settings.saveProjectSettings({publicAccessLevel: $scope.inputs.privileges})
+			settings.saveProjectAdminSettings({publicAccessLevel: $scope.inputs.privileges})
 			$modalInstance.close()
 
 		$scope.cancel = () ->
@@ -119,7 +119,7 @@ define [
 	App.controller "MakePrivateModalController", ["$scope", "$modalInstance", "settings", ($scope, $modalInstance, settings) ->
 		$scope.makePrivate = () ->
 			$scope.project.publicAccesLevel = "private"
-			settings.saveProjectSettings({publicAccessLevel: "private"})
+			settings.saveProjectAdminSettings({publicAccessLevel: "private"})
 			$modalInstance.close()
 
 		$scope.cancel = () ->

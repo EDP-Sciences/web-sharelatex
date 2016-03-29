@@ -1,23 +1,6 @@
 define [
 	"base"
 ], (App) ->
-
-
-	App.controller 'NewTagModalController', ($scope, $modalInstance, $timeout) ->
-		$scope.inputs = 
-			newTagName: ""
-
-		$modalInstance.opened.then () ->
-			$timeout () ->
-				$scope.$broadcast "open"
-			, 200
-
-		$scope.create = () ->
-			$modalInstance.close($scope.inputs.newTagName)
-
-		$scope.cancel = () ->
-			$modalInstance.dismiss('cancel')
-
 	App.controller 'RenameProjectModalController', ($scope, $modalInstance, $timeout, projectName) ->
 		$scope.inputs = 
 			projectName: projectName
@@ -82,11 +65,11 @@ define [
 		$scope.projectsToLeave = projects.filter (project) -> project.accessLevel != "owner"
 
 		if $scope.projectsToLeave.length > 0 and $scope.projectsToDelete.length > 0
-			$scope.action = "Delete & Leave"
+			$scope.action = "delete-and-leave"
 		else if $scope.projectsToLeave.length == 0 and $scope.projectsToDelete.length > 0
-			$scope.action = "Delete"
+			$scope.action = "delete"
 		else
-			$scope.action = "Leave"
+			$scope.action = "leave"
 
 		$scope.delete = () ->
 			$modalInstance.close()

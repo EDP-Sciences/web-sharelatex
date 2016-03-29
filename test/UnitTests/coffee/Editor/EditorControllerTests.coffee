@@ -97,23 +97,23 @@ describe "EditorController", ->
 		beforeEach ->
 			@docLines = ["foo", "bar"]
 			@DocumentUpdaterHandler.flushDocToMongo = sinon.stub().callsArg(2)
-			@DocumentUpdaterHandler.setDocument = sinon.stub().callsArg(4)
+			@DocumentUpdaterHandler.setDocument = sinon.stub().callsArg(5)
 
 		it 'should send the document to the documentUpdaterHandler', (done)->
-			@DocumentUpdaterHandler.setDocument = sinon.stub().withArgs(@project_id, @doc_id, @docLines, @source).callsArg(4)
-			@EditorController.setDoc @project_id, @doc_id, @docLines, @source, (err)->
+			@DocumentUpdaterHandler.setDocument = sinon.stub().withArgs(@project_id, @doc_id, @user_id, @docLines, @source).callsArg(5)
+			@EditorController.setDoc @project_id, @doc_id, @user_id, @docLines, @source, (err)->
 				done()
 
 		it 'should send the new doc lines to the doucment updater', (done)->
 			@DocumentUpdaterHandler.setDocument = ->
-			mock = sinon.mock(@DocumentUpdaterHandler).expects("setDocument").withArgs(@project_id, @doc_id, @docLines, @source).once().callsArg(4)
+			mock = sinon.mock(@DocumentUpdaterHandler).expects("setDocument").withArgs(@project_id, @doc_id, @user_id, @docLines, @source).once().callsArg(5)
 
-			@EditorController.setDoc @project_id, @doc_id, @docLines, @source, (err)=>
+			@EditorController.setDoc @project_id, @doc_id, @user_id, @docLines, @source, (err)=>
 				mock.verify()
 				done()
 
 		it 'should flush the doc to mongo', (done)->
-			@EditorController.setDoc @project_id, @doc_id, @docLines, @source, (err)=>
+			@EditorController.setDoc @project_id, @doc_id, @user_id, @docLines, @source, (err)=>
 				@DocumentUpdaterHandler.flushDocToMongo.calledWith(@project_id, @doc_id).should.equal true
 				done()
 
@@ -517,12 +517,23 @@ describe "EditorController", ->
 			@folder_id = "313dasd21dasdsa"
 			@ProjectEntityHandler.moveEntity = sinon.stub().callsArgWith(4, @err)
 			@EditorRealTimeController.emitToRoom = sinon.stub()
+			@LockManager.releaseLock.callsArgWith(1)
+			@LockManager.getLock.callsArgWith(1)
 
 		it "should call the ProjectEntityHandler", (done)->
 			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>
 				@ProjectEntityHandler.moveEntity.calledWith(@project_id, @entity_id, @folder_id, @entityType).should.equal true
 				done()
 
+		it "should take the lock", (done)->
+			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>
+				@LockManager.getLock.calledWith(@project_id).should.equal true
+				done()
+
+		it "should release the lock", (done)->
+			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>
+				@LockManager.releaseLock.calledWith(@project_id).should.equal true
+				done()
 
 		it "should emit the update to the room", (done)->
 			@EditorController.moveEntity @project_id, @entity_id, @folder_id, @entityType, =>

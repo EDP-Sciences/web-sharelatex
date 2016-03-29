@@ -30,6 +30,8 @@ OldAssetProxy = require("./OldAssetProxy")
 translations = require("translations-sharelatex").setup(Settings.i18n)
 Modules = require "./Modules"
 
+ErrorController = require "../Features/Errors/ErrorController"
+
 metrics.mongodb.monitor(Path.resolve(__dirname + "/../../../node_modules/mongojs/node_modules/mongodb"), logger)
 metrics.mongodb.monitor(Path.resolve(__dirname + "/../../../node_modules/mongoose/node_modules/mongodb"), logger)
 
@@ -122,6 +124,10 @@ apiRouter.get "/profile", (req, res) ->
 		res.json(profile)
 	, time
 
+app.get "/heapdump", (req, res)->
+	require('heapdump').writeSnapshot '/tmp/' + Date.now() + '.clsi.heapsnapshot', (err, filename)->
+		res.send filename
+
 logger.info ("creating HTTP server").yellow
 server = require('http').createServer(app)
 
@@ -131,6 +137,8 @@ app.use(apiRouter)
 app.use(webRouter)
 
 router = new Router(webRouter, apiRouter)
+
+app.use ErrorController.handleError
 
 module.exports =
 	app: app

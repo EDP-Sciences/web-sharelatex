@@ -5,17 +5,19 @@ projectDuplicator = require("./ProjectDuplicator")
 projectCreationHandler = require("./ProjectCreationHandler")
 editorController = require("../Editor/EditorController")
 metrics = require('../../infrastructure/Metrics')
-Project = require('../../models/Project').Project
 User = require('../../models/User').User
 TagsHandler = require("../Tags/TagsHandler")
 SubscriptionLocator = require("../Subscription/SubscriptionLocator")
+NotificationsHandler = require("../Notifications/NotificationsHandler")
 LimitationsManager = require("../Subscription/LimitationsManager")
 _ = require("underscore")
 Settings = require("settings-sharelatex")
-SecurityManager = require("../../managers/SecurityManager")
+AuthorizationManager = require("../Authorization/AuthorizationManager")
 fs = require "fs"
 InactiveProjectManager = require("../InactiveData/InactiveProjectManager")
 ProjectUpdateHandler = require("./ProjectUpdateHandler")
+ProjectGetter = require("./ProjectGetter")
+PrivilegeLevels = require("../Authorization/PrivilegeLevels")
 
 module.exports = ProjectController =
 
@@ -40,6 +42,14 @@ module.exports = ProjectController =
 			jobs.push (callback) ->
 				editorController.setRootDoc project_id, req.body.rootDocId, callback
 
+		async.series jobs, (error) ->
+			return next(error) if error?
+			res.sendStatus(204)
+			
+	updateProjectAdminSettings: (req, res, next) ->
+		project_id = req.params.Project_id
+		
+		jobs = []
 		if req.body.publicAccessLevel?
 			jobs.push (callback) ->
 				editorController.setPublicAccessLevel project_id, req.body.publicAccessLevel, callback
@@ -51,7 +61,7 @@ module.exports = ProjectController =
 	deleteProject: (req, res) ->
 		project_id = req.params.Project_id
 		forever    = req.query?.forever?
-		logger.log project_id: project_id, forever: forever, "received request to delete project"
+		logger.log project_id: project_id, forever: forever, "received request to archive project"
 
 		if forever
 			doDelete = projectDeleter.deleteProject
@@ -125,8 +135,10 @@ module.exports = ProjectController =
 		async.parallel {
 			tags: (cb)->
 				TagsHandler.getAllTags user_id, cb
+			notifications: (cb)->
+				NotificationsHandler.getUserNotifications user_id, cb
 			projects: (cb)->
-				Project.findAllUsersProjects user_id, 'name lastUpdated publicAccesLevel archived owner_ref', cb
+				ProjectGetter.findAllUsersProjects user_id, 'name lastUpdated publicAccesLevel archived owner_ref', cb
 			hasSubscription: (cb)->
 				LimitationsManager.userHasSubscriptionOrIsGroupMember req.session.user, cb
 			user: (cb) ->
@@ -137,6 +149,9 @@ module.exports = ProjectController =
 					return next(err)
 				logger.log results:results, user_id:user_id, "rendering project list"
 				tags = results.tags[0]
+				notifications = require("underscore").map results.notifications, (notification)-> 
+					notification.html = req.i18n.translate(notification.templateKey, notification.messageOpts)
+					return notification
 				projects = ProjectController._buildProjectList results.projects[0], results.projects[1], results.projects[2]
 				user = results.user
 				ProjectController._injectProjectOwners projects, (error, projects) ->
@@ -147,6 +162,7 @@ module.exports = ProjectController =
 						priority_title: true
 						projects: projects
 						tags: tags
+						notifications: notifications or []
 						user: user
 						hasSubscription: results.hasSubscription[0]
 					}
@@ -161,32 +177,32 @@ module.exports = ProjectController =
 			return res.render("general/closed", {title:"updating_site"})
 
 		if req.session.user?
-			user_id = req.session.user._id 
+			user_id = req.session.user._id
 			anonymous = false
 		else
 			anonymous = true
-			user_id = 'openUser'
-		
+			user_id = null
+
 		project_id = req.params.Project_id
 		logger.log project_id:project_id, "loading editor"
-	
+
 		async.parallel {
 			project: (cb)->
-				Project.findPopulatedById project_id, cb
+				ProjectGetter.getProject project_id, { name: 1, lastUpdated: 1}, cb
 			user: (cb)->
-				if user_id == 'openUser'
+				if !user_id?
 					cb null, defaultSettingsForAnonymousUser(user_id)
 				else
 					User.findById user_id, (err, user)->
 						logger.log project_id:project_id, user_id:user_id, "got user"
 						cb err, user
 			subscription: (cb)->
-				if user_id == 'openUser'
+				if !user_id?
 					return cb()
 				SubscriptionLocator.getUsersSubscription user_id, cb
 			activate: (cb)->
 				InactiveProjectManager.reactivateProjectIfRequired project_id, cb
-			markAsOpened: (cb)-> 
+			markAsOpened: (cb)->
 				#don't need to wait for this to complete
 				ProjectUpdateHandler.markAsOpened project_id, ->
 				cb()
@@ -198,21 +214,23 @@ module.exports = ProjectController =
 			user = results.user
 			subscription = results.subscription
 
+
 			daysSinceLastUpdated =  (new Date() - project.lastUpdated) / 86400000
 			logger.log project_id:project_id, daysSinceLastUpdated:daysSinceLastUpdated, "got db results for loading editor"
 
-			SecurityManager.userCanAccessProject user, project, (canAccess, privilegeLevel)->
-				if !canAccess
+			AuthorizationManager.getPrivilegeLevelForProject user_id, project_id, (error, privilegeLevel)->
+				return next(error) if error?
+				if !privilegeLevel? or privilegeLevel == PrivilegeLevels.NONE
 					return res.sendStatus 401
 
 				if subscription? and subscription.freeTrial? and subscription.freeTrial.expiresAt?
 					allowedFreeTrial = !!subscription.freeTrial.allowed || true
+
 				logger.log project_id:project_id, "rendering editor page"
 				res.render 'project/editor',
 					title:  project.name
 					priority_title: true
 					bodyClasses: ["editor"]
-					project : project
 					project_id : project._id
 					user : {
 						id    : user.id
@@ -306,4 +324,3 @@ do generateThemeList = () ->
 		if file.slice(-2) == "js" and file.match(/^theme-/)
 			cleanName = file.slice(0,-3).slice(6)
 			THEME_LIST.push cleanName
-

@@ -8,13 +8,16 @@ querystring = require('querystring')
 Url = require("url")
 Settings = require "settings-sharelatex"
 basicAuth = require('basic-auth-connect')
-
+UserHandler = require("../User/UserHandler")
 
 module.exports = AuthenticationController =
 	login: (req, res, next = (error) ->) ->
-		email = req.body?.email?.toLowerCase()
-		password = req.body?.password
-		redir = Url.parse(req.body?.redir or "/project").path
+		AuthenticationController.doLogin req.body, req, res, next
+	
+	doLogin: (options, req, res, next) ->
+		email = options.email?.toLowerCase()
+		password = options.password
+		redir = Url.parse(options.redir or "/project").path
 		LoginRateLimiter.processLoginRequest email, (err, isAllowed)->
 			if !isAllowed
 				logger.log email:email, "too many login requests"
@@ -26,26 +29,20 @@ module.exports = AuthenticationController =
 			AuthenticationManager.authenticate email: email, password, (error, user) ->
 				return next(error) if error?
 				if user?
+					UserHandler.setupLoginData user, ->
 					LoginRateLimiter.recordSuccessfulLogin email
 					AuthenticationController._recordSuccessfulLogin user._id
 					AuthenticationController.establishUserSession req, user, (error) ->
 						return next(error) if error?
 						req.session.justLoggedIn = true
 						logger.log email: email, user_id: user._id.toString(), "successful log in"
-						res.send redir: redir
+						res.json redir: redir
 				else
 					AuthenticationController._recordFailedLogin()
 					logger.log email: email, "failed log in"
-					res.send message:
+					res.json message:
 						text: req.i18n.translate("email_or_password_wrong_try_again"),
 						type: 'error'
-
-	getAuthToken: (req, res, next = (error) ->) ->
-		AuthenticationController.getLoggedInUserId req, (error, user_id) ->
-			return next(error) if error?
-			AuthenticationManager.getAuthToken user_id, (error, auth_token) ->
-				return next(error) if error?
-				res.send(auth_token)
 
 	getLoggedInUserId: (req, callback = (error, user_id) ->) ->
 		if req?.session?.user?._id?
@@ -53,37 +50,21 @@ module.exports = AuthenticationController =
 		else
 			callback null, null
 
-	getLoggedInUser: (req, options = {allow_auth_token: false}, callback = (error, user) ->) ->
-		if typeof(options) == "function"
-			callback = options
-			options = {allow_auth_token: false}
-
+	getLoggedInUser: (req, callback = (error, user) ->) ->
 		if req.session?.user?._id?
 			query = req.session.user._id
-		else if req.query?.auth_token? and options.allow_auth_token
-			query = { auth_token: req.query.auth_token }
 		else
 			return callback null, null
 
 		UserGetter.getUser query, callback
 
-	requireLogin: (options = {allow_auth_token: false, load_from_db: false}) ->
+	requireLogin: () ->
 		doRequest = (req, res, next = (error) ->) ->
-			load_from_db = options.load_from_db
-			if req.query?.auth_token? and options.allow_auth_token
-				load_from_db = true
-			if load_from_db
-				AuthenticationController.getLoggedInUser req, { allow_auth_token: options.allow_auth_token }, (error, user) ->
-					return next(error) if error?
-					return AuthenticationController._redirectToLoginOrRegisterPage(req, res) if !user?
-					req.user = user
-					return next()
+			if !req.session.user?
+				AuthenticationController._redirectToLoginOrRegisterPage(req, res) 
 			else
-				if !req.session.user?
-					AuthenticationController._redirectToLoginOrRegisterPage(req, res) 
-				else
-					req.user = req.session.user
-					return next()
+				req.user = req.session.user
+				return next()
 
 		return doRequest
 

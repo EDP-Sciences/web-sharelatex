@@ -5,6 +5,7 @@ Project = require('../../models/Project').Project
 keys = require('../../infrastructure/Keys')
 metrics = require("../../infrastructure/Metrics")
 request = require("request")
+CollaboratorsHandler = require('../Collaborators/CollaboratorsHandler')
 
 buildPath = (user_id, project_name, filePath)->
 	projectPath = path.join(project_name, "/", filePath)
@@ -42,6 +43,9 @@ module.exports = TpdsUpdateSender =
 
 	_addEntity: (options, callback = (err)->)->
 		getProjectsUsersIds options.project_id, (err, user_id, allUserIds)->
+			if err?
+				logger.err err:err, options:options, "error getting projects user ids"
+				return callback(err)
 			logger.log project_id: options.project_id, user_id:user_id, path: options.path, uri:options.uri, rev:options.rev, "sending file to third party data store"
 			postOptions =
 				method : "post"
@@ -53,6 +57,9 @@ module.exports = TpdsUpdateSender =
 				title: "addFile"
 				streamOrigin : options.streamOrigin
 			TpdsUpdateSender._enqueue options.project_id, "pipeStreamFrom", postOptions, (err)->
+				if err?
+					logger.err err:err,  project_id: options.project_id, user_id:user_id, path: options.path, uri:options.uri, rev:options.rev, "error sending file to third party data store queued up for processing"
+					return callback(err)
 				logger.log project_id: options.project_id, user_id:user_id, path: options.path, uri:options.uri, rev:options.rev, "sending file to third party data store queued up for processing"
 				callback(err)
 	
@@ -116,9 +123,11 @@ module.exports = TpdsUpdateSender =
 		TpdsUpdateSender._enqueue "poll-dropbox:#{user_id}", "standardHttpRequest", options, callback
 
 getProjectsUsersIds = (project_id, callback = (err, owner_id, allUserIds)->)->
-	Project.findById project_id, "_id owner_ref readOnly_refs collaberator_refs", (err, project)->
-		allUserIds = [].concat(project.collaberator_refs).concat(project.readOnly_refs).concat(project.owner_ref)
-		callback err, project.owner_ref, allUserIds
+	Project.findById project_id, "_id owner_ref", (err, project) ->
+		return callback(err) if err?
+		CollaboratorsHandler.getMemberIds project_id, (err, member_ids) ->
+			return callback(err) if err?
+			callback err, project?.owner_ref, member_ids
 
 mergeProjectNameAndPath = (project_name, path)->
 	if(path.indexOf('/') == 0)

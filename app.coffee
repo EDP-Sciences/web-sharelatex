@@ -3,24 +3,19 @@ logger = require 'logger-sharelatex'
 logger.initialize("web-sharelatex")
 logger.logger.serializers.user = require("./app/js/infrastructure/LoggerSerializers").user
 logger.logger.serializers.project = require("./app/js/infrastructure/LoggerSerializers").project
+if Settings.sentry?.dsn?
+	logger.initializeErrorReporting(Settings.sentry.dsn)
+
 metrics = require("metrics-sharelatex")
 metrics.initialize("web")
+metrics.memory.monitor(logger)
 Server = require("./app/js/infrastructure/Server")
-Errors = require "./app/js/errors"
 
 argv = require("optimist")
 	.options("user", {alias : "u", description : "Run the server with permissions of the specified user"})
 	.options("group", {alias : "g", description : "Run the server with permissions of the specified group"})
 	.usage("Usage: $0")
 	.argv
-
-Server.app.use (error, req, res, next) ->
-	logger.error err: error, url:req.url, method:req.method, user:req?.sesson?.user, "error passed to top level next middlewear"
-	res.statusCode = error.status or 500
-	if res.statusCode == 500
-		res.end("Oops, something went wrong with your request, sorry. If this continues, please contact us at #{Settings.adminEmail}")
-	else
-		res.end()
 
 if Settings.catchErrors
 	process.removeAllListeners "uncaughtException"

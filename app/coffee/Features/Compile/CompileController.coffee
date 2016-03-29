@@ -25,6 +25,8 @@ module.exports = CompileController =
 				options.rootDoc_id = req.body.settingsOverride.rootDoc_id
 			if req.body?.compiler
 				options.compiler = req.body.compiler
+			if req.body?.draft
+				options.draft = req.body.draft
 			logger.log {options, project_id}, "got compile request"
 			CompileManager.compile project_id, user_id, options, (error, status, outputFiles, output, limits) ->
 				return next(error) if error?
@@ -51,9 +53,9 @@ module.exports = CompileController =
 			else
 				rateLimitOpts =
 					endpointName: "full-pdf-download"
-					throttle: 100
+					throttle: 1000
 					subjectName : req.ip
-					timeInterval : 60 * 10
+					timeInterval : 60 * 60
 				RateLimiter.addCount rateLimitOpts, callback
 
 		Project.findById project_id, {name: 1}, (err, project)->

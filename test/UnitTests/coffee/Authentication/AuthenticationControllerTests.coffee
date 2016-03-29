@@ -18,6 +18,7 @@ describe "AuthenticationController", ->
 			"../User/UserUpdater" : @UserUpdater = {}
 			"../../infrastructure/Metrics": @Metrics = { inc: sinon.stub() }
 			"../Security/LoginRateLimiter": @LoginRateLimiter = { processLoginRequest:sinon.stub(), recordSuccessfulLogin:sinon.stub() }
+			"../User/UserHandler": @UserHandler = {setupLoginData:sinon.stub()}
 			"logger-sharelatex": @logger = { log: sinon.stub(), error: sinon.stub() }
 			"settings-sharelatex": {}
 		@user =
@@ -68,6 +69,9 @@ describe "AuthenticationController", ->
 					.calledWith(email: @email.toLowerCase(), @password)
 					.should.equal true
 
+			it "should setup the user data in the background", ->
+				@UserHandler.setupLoginData.calledWith(@user).should.equal true
+
 			it "should establish the user's session", ->
 				@AuthenticationController.establishUserSession
 					.calledWith(@req, @user)
@@ -108,6 +112,9 @@ describe "AuthenticationController", ->
 
 			it "should not establish a session", ->
 				@AuthenticationController.establishUserSession.called.should.equal false
+			
+			it "should not setup the user data in the background", ->
+				@UserHandler.setupLoginData.called.should.equal false
 
 			it "should record a failed login", ->
 				@AuthenticationController._recordFailedLogin.called.should.equal true
@@ -166,37 +173,11 @@ describe "AuthenticationController", ->
 			beforeEach ->
 				@req.session =
 					user: @user
-				@AuthenticationController.getLoggedInUser(@req, {}, @callback)
+				@AuthenticationController.getLoggedInUser(@req, @callback)
 
 			it "should look up the user in the database", ->
 				@UserGetter.getUser
 					.calledWith(@user._id)
-					.should.equal true
-
-			it "should return the user", ->
-				@callback.calledWith(null, @user).should.equal true
-
-		describe "with an auth token, but without auth_token_allowed set to true", ->
-			beforeEach ->
-				@req.query =
-					auth_token: "auth-token"
-				@AuthenticationController.getLoggedInUser(@req, {}, @callback)
-
-			it "should not look up the user in the database", ->
-				@UserGetter.getUser.called.should.equal false
-
-			it "should return null in the callback", ->
-				@callback.calledWith(null, null).should.equal true
-
-		describe "with an auth token and auth_token_allowed set to true", ->
-			beforeEach ->
-				@req.query =
-					auth_token: "auth-token"
-				@AuthenticationController.getLoggedInUser(@req, {allow_auth_token: true}, @callback)
-
-			it "should look up the user in the database", ->
-				@UserGetter.getUser
-					.calledWith(auth_token: @req.query.auth_token)
 					.should.equal true
 
 			it "should return the user", ->
@@ -207,74 +188,32 @@ describe "AuthenticationController", ->
 			@user =
 				_id: "user-id-123"
 				email: "user@sharelatex.com"
+			@middleware = @AuthenticationController.requireLogin()
 			
-		describe "when loading from the database", ->
+		describe "when the user is logged in", ->
 			beforeEach ->
-				@middleware = @AuthenticationController.requireLogin(@options = { allow_auth_token: true, load_from_db: true })
-
-			describe "when the user is logged in", ->
-				beforeEach ->
-					@AuthenticationController.getLoggedInUser = sinon.stub().callsArgWith(2, null, @user)
-					@middleware(@req, @res, @next)
-
-				it "should call getLoggedInUser with the passed options", ->
-					@AuthenticationController.getLoggedInUser.calledWith(@req, { allow_auth_token: true }).should.equal true
-
-				it "should set the user property on the request", ->
-					@req.user.should.deep.equal @user
-
-				it "should call the next method in the chain", ->
-					@next.called.should.equal true
-
-			describe "when the user is not logged in", ->
-				beforeEach ->
-					@AuthenticationController._redirectToLoginOrRegisterPage = sinon.stub()
-					@AuthenticationController.getLoggedInUser = sinon.stub().callsArgWith(2, null, null)
-					@middleware(@req, @res, @next)
-
-				it "should redirect to the register page", ->
-					@AuthenticationController._redirectToLoginOrRegisterPage.calledWith(@req, @res).should.equal true
-
-		describe "when not loading from the database", ->
-			beforeEach ->
-				@middleware = @AuthenticationController.requireLogin(@options = { load_from_db: false })
-
-			describe "when the user is logged in", ->
-				beforeEach ->
-					@req.session =
-						user: @user = {
-							_id: "user-id-123"
-							email: "user@sharelatex.com"
-						}
-					@middleware(@req, @res, @next)
-
-				it "should set the user property on the request", ->
-					@req.user.should.deep.equal @user
-
-				it "should call the next method in the chain", ->
-					@next.called.should.equal true
-
-			describe "when the user is not logged in", ->
-				beforeEach ->
-					@req.session = {}
-					@AuthenticationController._redirectToLoginOrRegisterPage = sinon.stub()
-					@req.query = {}
-					@middleware(@req, @res, @next)
-
-				it "should redirect to the register or login page", ->
-					@AuthenticationController._redirectToLoginOrRegisterPage.calledWith(@req, @res).should.equal true
-
-		describe "when not loading from the database but an auth_token is provided", ->
-			beforeEach ->
-				@AuthenticationController.getLoggedInUser = sinon.stub().callsArgWith(2, null, @user)
-				@middleware = @AuthenticationController.requireLogin(@options = { load_from_db: false, allow_auth_token: true })
-				@req.query = auth_token: @auth_token = "auth-token-provided"
+				@req.session =
+					user: @user = {
+						_id: "user-id-123"
+						email: "user@sharelatex.com"
+					}
 				@middleware(@req, @res, @next)
 
-			it "should try to load the user from the database anyway", ->
-				@AuthenticationController.getLoggedInUser
-					.calledWith(@req, {allow_auth_token: true})
-					.should.equal true
+			it "should set the user property on the request", ->
+				@req.user.should.deep.equal @user
+
+			it "should call the next method in the chain", ->
+				@next.called.should.equal true
+
+		describe "when the user is not logged in", ->
+			beforeEach ->
+				@req.session = {}
+				@AuthenticationController._redirectToLoginOrRegisterPage = sinon.stub()
+				@req.query = {}
+				@middleware(@req, @res, @next)
+
+			it "should redirect to the register or login page", ->
+				@AuthenticationController._redirectToLoginOrRegisterPage.calledWith(@req, @res).should.equal true
 
 	describe "requireGlobalLogin", ->
 		beforeEach ->
