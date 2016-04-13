@@ -81,7 +81,7 @@ module.exports = class Router
 		RealTimeProxyRouter.apply(webRouter, apiRouter)
 		ContactRouter.apply(webRouter, apiRouter)
 		ObjectDisplayRouter.apply webRouter
-		SubmissionRouter.apply webRouter
+		SubmissionRouter.apply webRouter, apiRouter
 
 		Modules.applyRouter(webRouter, apiRouter)
 

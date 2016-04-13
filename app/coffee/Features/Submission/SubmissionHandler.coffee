@@ -29,12 +29,12 @@ module.exports = SubmissionHandler =
       json: true
       method: "post"
       timeout: 5 * 1000
-    request opts, (err)->
+    request opts, (err, response)->
       if err?
-        logger.err err:err, "error cancelling the submission process"
+        logger.err err:err, response: response,"error cancelling the submission process"
         callback err
       else
-        logger.log submission_id:submission_id, "successfully cancelled the submission process"
+        logger.log submission_id:submission_id, response: response, "successfully cancelled the submission process"
         callback()
 
   finalizeSubmission: (submission_id, callback) ->
@@ -43,12 +43,12 @@ module.exports = SubmissionHandler =
       json: true
       method: "post"
       timeout: 5 * 1000
-    request opts, (err)->
+    request opts, (err, response)->
       if err?
-        logger.err err:err, "error finalizing the submission process"
+        logger.err err:err, response: response, "error finalizing the submission process"
         callback err
       else
-        logger.log project_id:project_id, "successfully finalized the submission process"
+        logger.log submission_id:submission_id, response: response, "successfully finalized the submission process"
         callback()
 
   getSubmissionStatus: (project_id, callback) ->
@@ -62,7 +62,8 @@ module.exports = SubmissionHandler =
         logger.err err:err, "error getting the submission status"
         callback err
       else
-        logger.log project_id:project_id, response: response.body, "successfully got the submission status"
+        logger.log project_id:project_id, response: response.body, status: response.statusCode, "successfully got the submission status"
+        return callback null, null if response.statusCode == 404
         return callback response.body if 200 < response.statusCode >= 400
         callback null, response.body
     
@@ -93,6 +94,11 @@ module.exports = SubmissionHandler =
           else
             logger.log project_id:project_id, response: response.body, "successfully deleted the submission"
             callback if 200 < response.statusCode >= 400 then response.body else null
+
+  restartSubmission: (project_id, callback) ->
+    SubmissionHandler.deleteSubmission project_id, (err) ->
+      return callback err if err?
+      SubmissionHandler.startSubmission project_id, callback
 
   getUserSubmissions: (user_id, callback) ->
     opts =

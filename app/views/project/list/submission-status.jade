@@ -1,9 +1,9 @@
 script(type='text/ng-template', id='SubmissionStatusTemplate')
     .submissionStatus(ng-controller="SubmissionStatusController", ng-show="project.show_submission_status")
         .error(ng-show="project.submission_error")
+            a.resubmit(href, ng-click="resubmitProject()")
+                span.glyphicon.glyphicon-send(aria-hidden="true", aria-label="#{translate('submission_resubmit')}", title="#{translate('submission_resubmit')}")
             span.glyphicon.glyphicon-ban-circle(aria-hidden="true", aria-label="#{translate('submission_error')}", title="{{project.submission_error}}")
-            a.delete(href, ng-click="deleteSubmission()")
-                span.glyphicon.glyphicon-remove-circle(aria-hidden="true", aria-label="#{translate('submission_delete')}", title="#{translate('submission_delete')}")
 
         .submit(ng-show="project.submittable")
             a.submit(href, ng-click="submitProject()")
@@ -11,10 +11,10 @@ script(type='text/ng-template', id='SubmissionStatusTemplate')
 
         .pending(ng-show="project.submission_pending")
             span.glyphicon.glyphicon-refresh(aria-hidden="true", aria-label="#{translate('submission_pending')}", title="#{translate('submission_pending')}")
-            span {{ project.submission_status }}
+            span.submission-status {{ project.submission_status }}
 
         .submitted(ng-show="project.submitted")
-            span.glyphicon.glyphicon-ok-circle(aria-hidden="true", aria-label="#{translate('submission_ready')}", title="#{translate('submission_ready')}")
+            span.glyphicon.glyphicon-ok-circle(ng-hide="project.submission_url" aria-hidden="true", aria-label="#{translate('submission_ready')}", title="#{translate('submission_ready')}")
             a(ng-show="project.submission_url" href="{{project.submission_url}}", target="_new")
                 span.glyphicon.glyphicon-new-window(aria-hidden="true", aria-label="#{translate('submission_finalize')}", title="#{translate('submission_finalize')}")
 
@@ -22,6 +22,6 @@ script(type='text/ng-template', id='SubmissionStatusTemplate')
             span.glyphicon.glyphicon-ok-circle(aria-hidden="true", aria-label="#{translate('submission_submitted')}", title="#{translate('submission_submitted')}")
 
         .cancelled(ng-show="project.cancelled")
+            a.resubmit(href, ng-click="resubmitProject()")
+                span.glyphicon.glyphicon-send(aria-hidden="true", aria-label="#{translate('submission_resubmit')}", title="#{translate('submission_resubmit')}")
             span.glyphicon.glyphicon-exclamation-sign(aria-hidden="true", aria-label="#{translate('submission_cancelled')}", title="#{translate('submission_cancelled')}")
-            a.delete(href, ng-click="deleteSubmission()")
-                span.glyphicon.glyphicon-remove-circle(aria-hidden="true", aria-label="#{translate('submission_delete')}", title="#{translate('submission_delete')}")
