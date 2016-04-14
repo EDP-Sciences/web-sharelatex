@@ -2,7 +2,7 @@ define [
   "base"
   "ace/ace"
 ], (App) ->
-  App.controller "SubmissionStatusController", ($scope, $http, $timeout) ->
+  App.controller "SubmissionStatusController", ($scope, $http, $timeout, $modal, $window) ->
 
     $scope.$watch 'project.submission', () ->
       project = $scope.project
@@ -29,6 +29,7 @@ define [
             $scope.project.submission_url = data.url
             $scope.project.submitted = true
             $timeout $scope.updateProjectStatus, 1000
+            $scope.submissionReady $scope.project
           when 'failed'
             $scope.project.submission_error = data.error
           else
@@ -38,6 +39,17 @@ define [
         $scope.project.submission_error = error
       .finally () ->
         delete $scope.submission_promise
+
+    $scope.submissionReady = (project) ->
+      return if not project.submission_url? or project.modal_shown
+      project.modal_shown = true
+      modalInstance = $modal.open
+        templateUrl: "submissionReadyModalTemplate"
+        controller: "SubmissionReadyModalController"
+ 
+      modalInstance.result.then
+        () ->
+          $window.open project.submission_url, '_blank'
 
     $scope.submitProject = () ->
       if $scope.submission_promise
