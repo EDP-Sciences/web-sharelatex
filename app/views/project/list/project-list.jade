@@ -138,6 +138,8 @@
 								i.tablesort.fa(ng-class="getSortIconClass('lastUpdated')")
 						.col-xs-2
 							span.header #{translate("submission_status")}
+								a.help-sign(href="/submission-help")
+									span.glyphicon.glyphicon-question-sign(aria-hidden="true", aria-label="#{translate('submission_help')}", title="#{translate('submission_help')}")
 				li.project_entry.container-fluid(
 					ng-repeat="project in visibleProjects | orderBy:predicate:reverse",
 					ng-controller="ProjectListItemController"

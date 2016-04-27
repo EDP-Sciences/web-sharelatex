@@ -66,6 +66,10 @@ module.exports = class Router
 			res.render 'general/contact',
 				title: 'Contact'
 
+		webRouter.get '/submission-help', (req, res) ->
+			res.render 'general/submission-help',
+				title: 'Submission Status Help'
+
 
 		# Left as a placeholder for implementing a public register page
 		webRouter.get  '/register', UserPagesController.registerPage

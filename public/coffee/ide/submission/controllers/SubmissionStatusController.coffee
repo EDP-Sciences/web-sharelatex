@@ -25,6 +25,7 @@ define [
             $scope.project.finalized = true
           when 'cancelled'
             $scope.project.cancelled = true
+            delete $scope.project.modal_shown
           when 'submitted'
             $scope.project.submission_url = data.url
             $scope.project.submitted = true
@@ -46,10 +47,10 @@ define [
       modalInstance = $modal.open
         templateUrl: "submissionReadyModalTemplate"
         controller: "SubmissionReadyModalController"
+        scope: $scope
  
-      modalInstance.result.then
-        () ->
-          $window.open project.submission_url, '_blank'
+      modalInstance.result.then () ->
+        $window.open project.submission_url, '_blank'
 
     $scope.submitProject = () ->
       if $scope.submission_promise

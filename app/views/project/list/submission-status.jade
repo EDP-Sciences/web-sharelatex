@@ -35,7 +35,7 @@ script(type='text/ng-template', id='submissionReadyModalTemplate')
         ) &times;
         h3 #{translate("submission_ready")}
     .modal-body
-        p #{translate("submission_congratulations")}
+        p #{translate("submission_congratulations", {title:"{{project_title}}"})}
     .modal-footer
         button.btn.btn-info(ng-click="finalize()") #{translate("submission_finalize")}
-        button.btn.btn-default(ng-click="cancel()") #{translate("cancel")}
+        button.btn.btn-default(ng-click="cancel()") #{translate("close")}
