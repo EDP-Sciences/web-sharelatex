@@ -52,6 +52,15 @@ define [
       modalInstance.result.then () ->
         $window.open project.submission_url, '_blank'
 
+    $scope.confirmSubmission = (resubmit=false) ->
+      modalInstance = $modal.open
+        templateUrl: "submissionConfirmModalTemplate"
+        controller: "SubmissionConfirmModalController"
+        scope: $scope
+
+      modalInstance.result.then () ->
+        if resubmit then $scope.resubmitProject() else $scope.submitProject()
+
     $scope.submitProject = () ->
       if $scope.submission_promise
         return
