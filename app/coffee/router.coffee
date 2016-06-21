@@ -39,6 +39,7 @@ InactiveProjectController = require("./Features/InactiveData/InactiveProjectCont
 ContactRouter = require("./Features/Contacts/ContactRouter")
 ReferencesController = require('./Features/References/ReferencesController')
 AuthorizationMiddlewear = require('./Features/Authorization/AuthorizationMiddlewear')
+SubmissionRouter = require "./Features/Submission/SubmissionRouter"
 
 logger = require("logger-sharelatex")
 _ = require("underscore")
@@ -66,6 +67,10 @@ module.exports = class Router
 			res.render 'general/contact',
 				title: 'Contact'
 
+		webRouter.get '/submission-help', (req, res) ->
+			res.render 'general/submission-help',
+				title: 'Submission Status Help'
+
 
 		# Left as a placeholder for implementing a public register page
 		webRouter.get  '/register', UserPagesController.registerPage
@@ -81,6 +86,7 @@ module.exports = class Router
 		RealTimeProxyRouter.apply(webRouter, apiRouter)
 		ContactRouter.apply(webRouter, apiRouter)
 		ObjectDisplayRouter.apply webRouter
+		SubmissionRouter.apply webRouter, apiRouter
 
 		Modules.applyRouter(webRouter, apiRouter)
 

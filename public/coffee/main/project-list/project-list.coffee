@@ -4,6 +4,7 @@ define [
 
 	App.controller "ProjectPageController", ($scope, $modal, $q, $window, queuedHttp, event_tracking, $timeout, sixpack) ->
 		$scope.projects = window.data.projects
+		$scope.submissions = window.data.submissions
 		$scope.tags = window.data.tags
 		$scope.notifications = window.data.notifications
 		$scope.allSelected = false
@@ -47,6 +48,29 @@ define [
 		projectsById = {}
 		for project in $scope.projects
 			projectsById[project.id] = project
+
+		for submission in $scope.submissions
+			projectsById[submission.project_id].submission = submission
+
+		for project in $scope.projects
+			project.show_submission_status = true
+			if project.submission
+				project.submittable = false
+				submission = project.submission
+				switch submission.status
+					when 'finalized'
+						project.finalized = true
+					when 'cancelled'
+						project.cancelled = true
+					when 'submitted'
+						project.submitted = true
+						project.submission_url = submission.url if project.accessLevel == "owner" and not project.archived
+					when 'failed'
+						project.submission_error = submission.error
+					else
+						project.submission_pending = true
+			else
+				project.submittable = project.accessLevel == "owner" and not project.archived
 
 		for tag in $scope.tags
 			for project_id in tag.project_ids or []

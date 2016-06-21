@@ -49,6 +49,11 @@ define [
 			if newValue != prevValue
 				settings.saveSettings objectDisplay: newValue == "true"
 
+		$scope.$watch "project.submissionTarget", (submissionTarget, oldSubmissionTarget) =>
+			return if @ignoreUpdates
+			if oldSubmissionTarget? and submissionTarget != oldSubmissionTarget
+				settings.saveProjectSettings({submissionTarget: submissionTarget})
+
 		ide.socket.on "compilerUpdated", (compiler) =>
 			@ignoreUpdates = true
 			$scope.$apply () =>

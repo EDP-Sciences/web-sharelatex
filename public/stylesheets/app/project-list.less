@@ -191,6 +191,7 @@ ul.structured-list {
 }
 
 ul.project-list {
+
 	li {
 		.last-modified, .owner {
 			font-size: .8rem;
@@ -208,6 +209,13 @@ ul.project-list {
 			padding-top: 0.25em;
 			display: inline-block;
 			color: white;
+		}
+
+		.help-sign {
+			font-size: 75%;
+			position: relative;
+			bottom: .25em;
+			margin-left: .25em;
 		}
 	}
 	i.tablesort {
@@ -264,4 +272,18 @@ ul.project-list {
 	.autocomplete .highlight {
 		font-weight: 700;
 	}
+}
+
+.submissionStatus {
+	.glyphicon.glyphicon-refresh {
+		transform-origin: center;
+		animation: fa-spin 4s linear infinite;
+		width: 15px;
+		height: 15px
+	}
+
+	.glyphicon { margin-right: 5px}
+	.glyphicon.glyphicon-ban-circle { color: darken(red, 4%)}
+	.glyphicon.glyphicon-exclamation-sign { color: darken(orange, 4%)}
+	.glyphicon.glyphicon-ok-circle { color: darken(green, 4%)}
 }

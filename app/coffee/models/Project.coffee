@@ -32,6 +32,8 @@ ProjectSchema = new Schema
 	archived          : { type: Boolean }
 	deletedDocs       : [DeletedDocSchema]
 	imageName         : { type: String }
+	submissionTarget  : {type:String, default:'aa'}
+	submissionId      : {type:String}
 
 ProjectSchema.statics.getProject = (project_or_id, fields, callback)->
 	if project_or_id._id?

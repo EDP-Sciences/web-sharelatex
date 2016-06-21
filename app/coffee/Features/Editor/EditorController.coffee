@@ -210,6 +210,12 @@ module.exports = EditorController =
 			EditorRealTimeController.emitToRoom project_id, 'rootDocUpdated', newRootDocID
 			callback()
 
+	setSubmissionTarget: (project_id, newSubmissionTarget, callback = (err) ->) ->
+		ProjectDetailsHandler.setSubmissionTarget project_id, newSubmissionTarget, (err) ->
+			return callback(err) if err?
+			EditorRealTimeController.emitToRoom project_id, 'submissionTargetUpdated', newSubmissionTarget
+			callback()
+
 			
 	p:
 		notifyProjectUsersOfNewFolder: (project_id, folder_id, folder, callback = (error)->)->

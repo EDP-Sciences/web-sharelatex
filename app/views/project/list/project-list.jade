@@ -123,7 +123,7 @@
 			)
 				li.container-fluid
 					.row
-						.col-xs-6
+						.col-xs-5
 							input.select-all(
 								select-all,
 								type="checkbox"
@@ -133,15 +133,19 @@
 						.col-xs-2
 							span.header.clickable(ng-click="changePredicate('accessLevel')") #{translate("owner")}
 								i.tablesort.fa(ng-class="getSortIconClass('accessLevel')")
-						.col-xs-4
+						.col-xs-3
 							span.header.clickable(ng-click="changePredicate('lastUpdated')") #{translate("last_modified")}
 								i.tablesort.fa(ng-class="getSortIconClass('lastUpdated')")
+						.col-xs-2
+							span.header #{translate("submission_status")}
+								a.help-sign(href="/submission-help")
+									span.glyphicon.glyphicon-question-sign(aria-hidden="true", aria-label="#{translate('submission_help')}", title="#{translate('submission_help')}")
 				li.project_entry.container-fluid(
 					ng-repeat="project in visibleProjects | orderBy:predicate:reverse",
 					ng-controller="ProjectListItemController"
 				)
 					.row
-						.col-xs-6
+						.col-xs-5
 							input.select-item(
 								select-individual,
 								type="checkbox",
@@ -159,8 +163,11 @@
 									) {{tag.name}}
 						.col-xs-2
 							span.owner {{ownerName()}}
-						.col-xs-4
+						.col-xs-3
 							span.last-modified {{project.lastUpdated | formatDate}}
+						.col-xs-2
+							submission-status(project="project")
+
 				li(
 					ng-if="visibleProjects.length == 0",
 					ng-cloak
@@ -178,3 +185,4 @@
 					|  #{translate("or_create_project_left")}
 
 							
+include ./submission-status

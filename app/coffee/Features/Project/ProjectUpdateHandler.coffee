@@ -1,6 +1,4 @@
 Project = require('../../models/Project').Project
-logger = require('logger-sharelatex')
-Project = require("../../models/Project").Project
 
 module.exports = 
 	markAsUpdated : (project_id, callback)->
