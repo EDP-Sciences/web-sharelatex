@@ -1,13 +1,13 @@
 SubmissionController = require "./SubmissionController"
-SecurityManager = require "../../managers/SecurityManager"
+AuthorizationMiddleware = require "../Authorization/AuthorizationMiddlewear"
 ApiAccessManager = require "./ApiAccessManager"
 
 module.exports =
   apply: (app, api) ->
 
-    app.post '/project/:Project_id/submit', SecurityManager.requestIsOwner, SubmissionController.startSubmission
-    app.post '/project/:Project_id/resubmit', SecurityManager.requestIsOwner, SubmissionController.restartSubmission
-    app.get  '/project/:Project_id/submissionStatus', SecurityManager.requestCanAccessProject, SubmissionController.getSubmissionStatus
+    app.post '/project/:Project_id/submit', AuthorizationMiddleware.ensureUserCanAdminProject, SubmissionController.startSubmission
+    app.post '/project/:Project_id/resubmit', AuthorizationMiddleware.ensureUserCanAdminProject, SubmissionController.restartSubmission
+    app.get  '/project/:Project_id/submissionStatus', AuthorizationMiddleware.ensureUserCanReadProject, SubmissionController.getSubmissionStatus
 
     api.post '/submission/:submission_id/cancel', ApiAccessManager, SubmissionController.cancelSubmission
     api.post '/submission/:submission_id/finalize', ApiAccessManager, SubmissionController.finalizeSubmission
