@@ -101,9 +101,12 @@ module.exports = OrcidController =
         logger.info 'orcid-bio data', data.toString()
         result = JSON.parse data.toString()
 
-        first_name = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["given-names"].value
-        last_name  = result?["orcid-profile"]?["orcid-bio"]?["personal-details"]?["family-name"].value
-        email = find_email result?["orcid-profile"]?["orcid-bio"]?["contact-details"]?["email"]
+        orcid_bio = result?["orcid-profile"]?["orcid-bio"]
+        return callback() if not orcid_bio
+
+        first_name = orcid_bio["personal-details"]?["given-names"]?.value
+        last_name  = orcid_bio["personal-details"]?["family-name"]?.value
+        email = find_email orcid_bio["contact-details"]?["email"]
 
         update = {}
         update.first_name = first_name if first_name? and not user.first_name?
