@@ -51,8 +51,8 @@ define [
 
 		$scope.$watch "project.submissionTarget", (submissionTarget, oldSubmissionTarget) =>
 			return if @ignoreUpdates
-			if oldSubmissionTarget? and submissionTarget != oldSubmissionTarget
-				settings.saveProjectSettings({submissionTarget: submissionTarget})
+			if submissionTarget != oldSubmissionTarget
+				settings.saveProjectAdminSettings submissionTarget: submissionTarget
 
 		ide.socket.on "compilerUpdated", (compiler) =>
 			@ignoreUpdates = true

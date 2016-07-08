@@ -7,7 +7,7 @@ define [
 
 			@$scope.$on 'document:closed', (e, doc) =>
 				if doc.doc_id
-				 	entity = @ide.fileTreeManager.findEntityById doc.doc_id
+					entity = @ide.fileTreeManager.findEntityById doc.doc_id
 					if entity?.name?.match /.*\.bib$/
 						@indexReferences([doc.doc_id], true)
 

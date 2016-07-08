@@ -143,7 +143,7 @@ module.exports = ProjectController =
 			notifications: (cb)->
 				NotificationsHandler.getUserNotifications user_id, cb
 			projects: (cb)->
-				ProjectGetter.findAllUsersProjects user_id, 'name lastUpdated publicAccesLevel archived owner_ref', cb
+				ProjectGetter.findAllUsersProjects user_id, 'name lastUpdated publicAccesLevel archived owner_ref submissionTarget', cb
 			submissions: (cb) ->
 				getUserSubmissions user_id, cb
 			hasSubscription: (cb)->
@@ -286,6 +286,7 @@ module.exports = ProjectController =
 			accessLevel: accessLevel
 			archived: !!project.archived
 			owner_ref: project.owner_ref
+			submissionTarget: project.submissionTarget
 		}
 
 	_injectProjectOwners: (projects, callback = (error, projects) ->) ->

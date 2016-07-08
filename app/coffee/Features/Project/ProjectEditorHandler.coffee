@@ -12,6 +12,7 @@ module.exports = ProjectEditorHandler =
 			compiler   : project.compiler
 			description: project.description
 			spellCheckLanguage: project.spellCheckLanguage
+			submissionTarget: project.submissionTarget
 			deletedByExternalDataSource : project.deletedByExternalDataSource || false
 			deletedDocs: project.deletedDocs
 			members:     []
