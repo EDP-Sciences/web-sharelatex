@@ -185,6 +185,9 @@ define [
 				scope.$watch "readOnly", (value) ->
 					editor.setReadOnly !!value
 
+				scope.$on "editor:updateFull", () ->
+					editor.renderer.updateFull true
+
 				editor.setOption("scrollPastEnd", true)
 				$(editor.renderer.container).css 'font-family', "'Inconsolata' 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace"
 

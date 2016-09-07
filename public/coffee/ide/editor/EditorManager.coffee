@@ -44,9 +44,12 @@ define [
 			@$scope.ui.view = "editor"
 
 			done = () =>
-				if options.gotoLine?
-					@$scope.$broadcast "editor:gotoLine", options.gotoLine
-			
+				setTimeout () =>
+					@$scope.$broadcast "editor:updateFull"
+					if options.gotoLine?
+						@$scope.$broadcast "editor:gotoLine", options.gotoLine
+				, 0
+
 			if doc.id == @$scope.editor.open_doc_id and !options.forceReopen
 				@$scope.$apply () =>
 					done()

@@ -53,6 +53,7 @@ define [], () ->
 			@editor.getSession().setScrollTop(pos.scrollTop or 0)
 			delete @ignoreCursorPositionChanges
 
-		gotoLine: (line) ->
-			@editor.gotoLine(line)
+		gotoLine: (line, column) ->
+			@editor.gotoLine line, column
+			@editor.scrollToLine line, true, true
 			@editor.focus()
