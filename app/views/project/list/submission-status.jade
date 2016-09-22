@@ -37,8 +37,8 @@ script(type='text/ng-template', id='submissionReadyModalTemplate')
     .modal-body
         p #{translate("submission_congratulations", {title:"{{project_title}}"})}
         p.alert.alert-warning.
-            Please note that in the current release of the Writing Studio, subsequent versions of your article
-            have to be saved as a PDF and uploaded manually in the
+            Please note that in the current release of Writing Studio,
+            revised versions of your manuscript should be uploaded in the usual way, i.e. manually in the
             #[a.alert-link(href="https://mms-aanda.obspm.fr/is/aa/") A&A Manuscript Management System] (MMS).
     .modal-footer
         button.btn.btn-info(ng-click="finalize()") #{translate("submission_finalize")}
