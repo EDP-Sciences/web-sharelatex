@@ -7,6 +7,9 @@ ProjectEntityHandler = require("../Project/ProjectEntityHandler")
 logger = require "logger-sharelatex"
 url = require("url")
 
+clsi_cookie_jar = request.jar()
+clsi_request = request.defaults jar: clsi_cookie_jar
+
 module.exports = ClsiManager =
 	sendRequest: (project_id, options = {}, callback = (error, success) ->) ->
 		ClsiManager._buildRequest project_id, options, (error, req) ->
@@ -23,7 +26,7 @@ module.exports = ClsiManager =
 
 	deleteAuxFiles: (project_id, options, callback = (error) ->) ->
 		compilerUrl = @_getCompilerUrl(options?.compileGroup)
-		request.del "#{compilerUrl}/project/#{project_id}", callback
+		clsi_request.del "#{compilerUrl}/project/#{project_id}", callback
 
 	_getCompilerUrl: (compileGroup) ->
 		if compileGroup == "priority"
@@ -33,11 +36,10 @@ module.exports = ClsiManager =
 
 	_postToClsi: (project_id, req, compileGroup, callback = (error, response) ->) ->
 		compilerUrl = @_getCompilerUrl(compileGroup)
-		request.post {
+		clsi_request.post
 			url:  "#{compilerUrl}/project/#{project_id}/compile"
 			json: req
-			jar:  false
-		}, (error, response, body) ->
+		, (error, response, body) ->
 			return callback(error) if error?
 			if 200 <= response.statusCode < 300
 				callback null, body
@@ -115,9 +117,9 @@ module.exports = ClsiManager =
 			wordcount_url = "#{compilerUrl}/project/#{project_id}/wordcount?file=#{encodeURIComponent(filename)}"
 			if req.compile.options.imageName?
 				wordcount_url += "&image=#{encodeURIComponent(req.compile.options.imageName)}"
-			request.get {
+			clsi_request.get
 				url: wordcount_url
-			}, (error, response, body) ->
+			, (error, response, body) ->
 				return callback(error) if error?
 				if 200 <= response.statusCode < 300
 					callback null, body
