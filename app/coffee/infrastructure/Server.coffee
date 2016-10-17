@@ -105,7 +105,7 @@ app.use (req, res, next)->
 	crawlerLogger.log(req)
 	next()
 
-app.use (req, res, next) ->
+webRouter.use (req, res, next) ->
 	if !Settings.editorIsOpen
 		res.status(503)
 		res.render("general/closed", {title:"maintenance"})
