@@ -75,10 +75,11 @@ module.exports = FileSystemImportManager =
 				return callback(error) if error?
 				jobs = _.map entries, (entry) =>
 					(callback) =>
-						FileTypeManager.shouldIgnore "#{folderPath}/#{entry}", (error, ignore) =>
+						fs_path = join_path folderPath, entry
+						FileTypeManager.shouldIgnore fs_path, (error, ignore) =>
 							return callback(error) if error?
 							if !ignore
-								FileSystemImportManager.addEntity user_id, project_id, parent_folder_id, entry, "#{folderPath}/#{entry}", replace, callback
+								FileSystemImportManager.addEntity user_id, project_id, parent_folder_id, entry, fs_path, replace, callback
 							else
 								callback()
 				async.parallelLimit jobs, 5, callback
