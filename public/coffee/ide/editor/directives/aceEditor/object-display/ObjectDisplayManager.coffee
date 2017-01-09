@@ -13,6 +13,24 @@ define [
   isrParen = (token) ->
     token?.type == "rparen"
 
+  getObjectContent = (iterator) ->
+    value = ''
+    start_row = start_column = false
+    while content = iterator.stepForward()
+      start_row = iterator.getCurrentTokenRow() if start_row is false
+      start_column = iterator.getCurrentTokenColumn() if start_column is false
+      break if !content
+      if content.type == "storage.type"
+        if content.value == "\\,"
+          value += ' '
+        else
+          break
+      if content.type == ""
+        value += content.value
+      else
+        break
+    [value, start_row, start_column, content]
+
   class ObjectDisplayManager
     constructor: (@scope, @editor, @element) ->
       # console.log "ObjectDisplayManager construct"
@@ -44,22 +62,31 @@ define [
           value = content.value
           start_row = iterator.getCurrentTokenRow()
           start_column = iterator.getCurrentTokenColumn()
-          rparen = iterator.stepForward()
+          rparen = false
+          while rparen is false
+            item = iterator.stepForward()
+            break if !item
+            switch item.type
+              when "constant.character.escape"
+                value += if item.value == "\\," then ' ' else item.value
+              when "text"
+                value += item.value
+              when "rparen"
+                if lparen.value == "{[" and item.value == "]"
+                  start_column -= 1
+                  value = "[#{value}]"
+                else
+                  rparen = item
+                  break
+              else
+                rparen = item
+                break
           if !rparen or !isrParen rparen
             continue
-          if lparen.value == "{[" and rparen.value == "]"
-            start_column -= 1
-            content = iterator.stepForward()  # Skip it and the following token (probably) }
-            if !content
-              continue
-            value = '[' + value + ']' + content.value
-            rparen = iterator.stepForward()
-            if !rparen or !isrParen rparen
-              continue
           end_row = iterator.getCurrentTokenRow()
           end_column = iterator.getCurrentTokenColumn()
           objects.push
-            value: value
+            value: value.replace('~', ' ')
             range: new Range start_row, start_column, end_row, end_column
         else
           iterator.stepForward()
