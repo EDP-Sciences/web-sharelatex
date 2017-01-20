@@ -176,7 +176,6 @@ define [
 						editor.setValue(text, -1)
 						session = editor.getSession()
 						session.setUseWrapMode(true)
-						session.setMode("ace/mode/latex")
 
 				scope.$watch "annotations", (annotations) ->
 					session = editor.getSession()

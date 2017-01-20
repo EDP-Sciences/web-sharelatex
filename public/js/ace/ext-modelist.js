@@ -43,6 +43,7 @@ var supportedModes = {
     Assembly_x86:["asm"],
     AutoHotKey:  ["ahk"],
     BatchFile:   ["bat|cmd"],
+    BibTeX:      ["bib"],
     C_Cpp:       ["cpp|c|cc|cxx|h|hh|hpp"],
     C9Search:    ["c9search_results"],
     Cirru:       ["cirru|cr"],

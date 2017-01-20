@@ -9,6 +9,7 @@ define [
 				sharejs_doc: null
 				open_doc_id: null
 				opening: true
+				edit_mode: "latex"
 			}
 
 			@$scope.$on "entity:selected", (event, entity) =>
@@ -112,6 +113,9 @@ define [
 					"Document Updated Externally"
 					"This document was just updated externally. Any recent changes you have made may have been overwritten. To see previous versions please look in the history."
 				)
+			@$scope.editor.edit_mode = edit_mode = if (doc.name.slice doc.name.length - 4).toLowerCase() == '.bib' then 'bibtex' else 'latex'
+			sharejs_doc.doc.on "ace-attached", (ace) ->
+				ace.getSession().setMode "ace/mode/#{edit_mode}"
 
 		_unbindFromDocumentEvents: (document) ->
 			document.off()

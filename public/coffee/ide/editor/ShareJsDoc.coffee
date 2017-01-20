@@ -106,7 +106,9 @@ define [
 		getInflightOp: () -> @_doc.inflightOp
 		getPendingOp: () -> @_doc.pendingOp
 
-		attachToAce: (ace) -> @_doc.attach_ace(ace, false, window.maxDocLength)
+		attachToAce: (ace) ->
+			@_doc.attach_ace(ace, false, window.maxDocLength)
+			@trigger "ace-attached", ace
 		detachFromAce: () -> @_doc.detach_ace?()
 	
 		INFLIGHT_OP_TIMEOUT: 5000 # Retry sending ops after 5 seconds without an ack
