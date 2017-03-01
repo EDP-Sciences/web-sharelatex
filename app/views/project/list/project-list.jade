@@ -93,7 +93,9 @@
 								ng-click="openCloneProjectModal()"
 							) #{translate("make_copy")}
 
-			.btn-toolbar(ng-show="filter == 'archived'")
+				!= moduleIncludes("projectList:actions", locals)
+
+		.btn-toolbar(ng-show="filter == 'archived'")
 				.btn-group(ng-hide="selectedProjects.length < 1")
 					a.btn.btn-default(
 						href,
