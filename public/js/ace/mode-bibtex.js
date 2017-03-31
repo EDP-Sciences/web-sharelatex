@@ -19,7 +19,7 @@ ace.define("ace/mode/bibtex_highlight_rules",
                 next : "start"
             }, {
                 token : ["storage.type", "text", "lparen", "text", "keyword"],
-                regex: /(@(?:\w+))(\s*)({)(\s*)(\w[\w+:-]*)/,
+                regex: /(@(?:\w+))(\s*)({)(\s*)(\w[\w+:\-.&]*)/,
                 next: "value-end"
             }],
             "value-list" : [{
