@@ -52,37 +52,30 @@ define [
       modalInstance.result.then () ->
         $window.open project.submission_url, '_blank'
 
-    $scope.confirmSubmission = (resubmit=false) ->
+    $scope.confirmSubmission = () ->
+      $scope.submission =
+        project_title: $scope.project?.name
+        resubmit: $scope.project.submission_error or $scope.project.cancelled
+        is_revision: $scope.project.submission?.submission_finalized_once
       modalInstance = $modal.open
         templateUrl: "submissionConfirmModalTemplate"
         controller: "SubmissionConfirmModalController"
         scope: $scope
 
       modalInstance.result.then () ->
-        if resubmit then $scope.resubmitProject() else $scope.submitProject()
+        $scope.submitProject()
 
     $scope.submitProject = () ->
       if $scope.submission_promise
         return
       $scope.project.submittable = false
-      $scope.submission_promise = $http.post "/project/#{$scope.project.id}/submit", _csrf: window.csrfToken
+      $scope.submission_promise = $http.post "/project/#{$scope.project.id}/submit",
+        _csrf: window.csrfToken
+        resubmit: $scope.submission.resubmit
+        is_revision: $scope.submission.is_revision
       .then (response) ->
         $scope.project.submission_pending = true
         $timeout $scope.updateProjectStatus, 200
-      .catch (error) ->
-        $scope.project.submission_error = error
-      .finally () ->
-        delete $scope.submission_promise
-
-    $scope.resubmitProject = () ->
-      if $scope.submission_promise
-        return
-      $scope.submission_promise = $http.post "/project/#{$scope.project.id}/resubmit", _csrf: window.csrfToken
-      .then (result) ->
-        $scope.project.submission_pending = true
-        $timeout $scope.updateProjectStatus, 200
-        delete $scope.project.cancelled
-        delete $scope.project.submission_error
       .catch (error) ->
         $scope.project.submission_error = error
       .finally () ->

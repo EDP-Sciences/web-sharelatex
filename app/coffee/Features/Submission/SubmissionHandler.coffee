@@ -7,11 +7,13 @@ ProjectGetter = require '../Project/ProjectGetter'
 
 module.exports = SubmissionHandler =
 
-  startSubmission: (project_id, callback) ->
+  startSubmission: (project_id, resubmit, is_revision, callback) ->
     opts =
       uri: "#{settings.apis.submit.url}/submit"
-      json :
+      json:
         project: project_id
+        resubmission: resubmit
+        is_revision: is_revision
       method: "post"
       timeout: 5 * 1000
     logger.log project_id:project_id, "sending something in the submission queue"
@@ -94,11 +96,6 @@ module.exports = SubmissionHandler =
           else
             logger.log project_id:project_id, response: response.body, "successfully deleted the submission"
             callback if 200 < response.statusCode >= 400 then response.body else null
-
-  restartSubmission: (project_id, callback) ->
-    SubmissionHandler.deleteSubmission project_id, (err) ->
-      return callback err if err?
-      SubmissionHandler.startSubmission project_id, callback
 
   getUserSubmissions: (user_id, callback) ->
     opts =

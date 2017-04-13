@@ -1,7 +1,7 @@
 script(type='text/ng-template', id='SubmissionStatusTemplate')
     .submissionStatus(ng-controller="SubmissionStatusController", ng-show="project.show_submission_status")
         .error(ng-show="project.submission_error")
-            a.resubmit(href, ng-click="confirmSubmission(true)")
+            a.resubmit(href, ng-click="confirmSubmission()")
                 span.glyphicon.glyphicon-send(aria-hidden="true", aria-label="#{translate('submission_resubmit')}", title="#{translate('submission_resubmit')}")
             span.glyphicon.glyphicon-ban-circle(aria-hidden="true", aria-label="#{translate('submission_error')}", title="{{project.submission_error}}")
 
@@ -19,10 +19,12 @@ script(type='text/ng-template', id='SubmissionStatusTemplate')
                 span.glyphicon.glyphicon-new-window(aria-hidden="true", aria-label="#{translate('submission_finalize')}", title="#{translate('submission_finalize')}")
 
         .finalized(ng-show="project.finalized")
+            a.resubmit(href, ng-click="confirmSubmission()")
+                span.glyphicon.glyphicon-send(aria-hidden="true", aria-label="#{translate('submission_submit_revision')}", title="#{translate('submission_submit_revision')}")
             span.glyphicon.glyphicon-ok-circle(aria-hidden="true", aria-label="#{translate('submission_submitted')}", title="#{translate('submission_submitted')}")
 
         .cancelled(ng-show="project.cancelled")
-            a.resubmit(href, ng-click="confirmSubmission(true)")
+            a.resubmit(href, ng-click="confirmSubmission()")
                 span.glyphicon.glyphicon-send(aria-hidden="true", aria-label="#{translate('submission_resubmit')}", title="#{translate('submission_resubmit')}")
             span.glyphicon.glyphicon-exclamation-sign(aria-hidden="true", aria-label="#{translate('submission_cancelled')}", title="#{translate('submission_cancelled')}")
 
@@ -36,10 +38,6 @@ script(type='text/ng-template', id='submissionReadyModalTemplate')
         h3 #{translate("submission_ready")}
     .modal-body
         p #{translate("submission_congratulations", {title:"{{project_title}}"})}
-        p.alert.alert-warning.
-            Please note that in the current release of Writing Studio,
-            revised versions of your manuscript should be uploaded in the usual way, i.e. manually in the
-            #[a.alert-link(href="https://mms-aanda.obspm.fr/is/aa/") A&A Manuscript Management System] (MMS).
     .modal-footer
         button.btn.btn-info(ng-click="finalize()") #{translate("submission_finalize")}
         button.btn.btn-default(ng-click="cancel()") #{translate("close")}
@@ -49,7 +47,9 @@ script(type='text/ng-template', id='submissionConfirmModalTemplate')
         button.close(type="button", data-dismiss="modal", ng-click="cancel()") &times;
         h3 #{translate("submission_confirm")}
     .modal-body
-        p #{translate("submission_are_you_sure", {title:"{{project_title}}"})}
+        p(ng-if="!submission.resubmit && !submission.is_revision") #{translate("submission_are_you_sure", {title:"{{submission.project_title}}"})}
+        p(ng-if="submission.resubmit") #{translate("submission_are_you_sure_resubmit", {title:"{{submission.project_title}}"})}
+        p(ng-if="submission.is_revision") #{translate("submission_are_you_sure_revision", {title:"{{submission.project_title}}"})}
     .modal-footer
         button.btn.btn-info(ng-click="confirm()") #{translate("ok")}
         button.btn.btn-default(ng-click="cancel()") #{translate("cancel")}
