@@ -97,9 +97,13 @@ module.exports = OrcidController =
       logger.info 'orcid-bio', response.statusCode
       return (callback response.statusCode) if response.statusCode >= 400
 
+      response_content = []
       response.on 'data', (data) ->
-        logger.info 'orcid-bio data', data.toString()
-        result = JSON.parse data.toString()
+        response_content.push(data.toString())
+      response.on 'end', () ->
+        data = response_content.join()
+        logger.info 'orcid-bio data', data
+        result = JSON.parse data
 
         orcid_bio = result?["orcid-profile"]?["orcid-bio"]
         return callback() if not orcid_bio
