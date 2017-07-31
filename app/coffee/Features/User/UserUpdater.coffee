@@ -27,6 +27,16 @@ module.exports = UserUpdater =
 				, $pull: collaberator_refs: holding_user._id
 				, cb
 			(cb) ->
+				db.projects.update
+					readOnly_refs: $elemMatch: $eq: holding_user._id
+				, $push: readOnly_refs: user_id
+				, cb
+			(cb) ->
+				db.projects.update
+					readOnly_refs: $elemMatch: $eq: holding_user._id
+				, $pull: readOnly_refs: holding_user._id
+				, cb
+			(cb) ->
 				holding_user.remove cb
 			(cb) ->
 				db.users.update
