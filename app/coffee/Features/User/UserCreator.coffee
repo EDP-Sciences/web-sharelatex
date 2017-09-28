@@ -1,5 +1,6 @@
 User = require("../../models/User").User
 UserLocator = require("./UserLocator")
+settings = require "settings-sharelatex"
 
 module.exports =
 
@@ -8,8 +9,10 @@ module.exports =
 		UserLocator.findByEmail email, (err, user)->
 			if user?
 				callback(err, user)
-			else
+			else if settings.allowUserCreationFromEmail
 				self.createNewUser email:email, holdingAccount:true, callback
+			else
+				callback "Unable to find a user with this email"
 
 	getUserByOrcidOrCreateHoldingAccount: (orcid, callback = (err, user)->)->
 		self = @
