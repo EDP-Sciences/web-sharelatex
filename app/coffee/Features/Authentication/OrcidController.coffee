@@ -176,10 +176,13 @@ module.exports = OrcidController =
       if response.statusCode >= 400
         return (next response.statusCode) if response.statusCode >= 300
 
-      response.on "data", (body) ->
-        logger.info 'data', body.toString()
+      response_content = []
+      response.on "data", (data) ->
+        response_content.push data.toString()
+      response.on "end", () ->
+        body = response_content.join()
         return (next response.statusCode) if response.statusCode >= 300
-        result = JSON.parse body.toString()
+        result = JSON.parse body
         if result?.token_type != "bearer"
           return next "Invalid token_type"
         orcid = result?.orcid

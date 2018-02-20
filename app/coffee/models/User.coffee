@@ -40,6 +40,8 @@ UserSchema = new Schema
 						}
 	featureSwitches	  : {
 		pdfng: { type: Boolean }
+		can_submit: {type: Boolean, default: false}
+		ads_references: {type: Boolean, default: false}
 	}
 	referal_id : {type:String, default:() -> uuid.v4().split("-")[0]}
 	refered_users: [ type:ObjectId, ref:'User' ]
