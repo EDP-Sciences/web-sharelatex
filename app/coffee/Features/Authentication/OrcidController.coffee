@@ -43,7 +43,7 @@ find_email = (emails) ->
 
 module.exports = OrcidController =
   init: () ->
-    OrcidController.endpoint_url = Settings.orcid?.endpoint_url or "http://pub.sandbox.orcid.org/v1.1/"
+    OrcidController.endpoint_url = Settings.orcid?.endpoint_url or "http://pub.sandbox.orcid.org/v2.1/"
     OrcidController.authorize_url = Settings.orcid?.authorize_url or "https://sandbox.orcid.org/oauth/authorize"
     OrcidController.token_url = Settings.orcid?.token_url or "https://pub.sandbox.orcid.org/oauth/token"
     OrcidController.scope = Settings.orcid?.scope or "/authenticate"
@@ -84,7 +84,7 @@ module.exports = OrcidController =
       callback error
 
   updateUserInfoFromOrcid: (user, callback = (error) ->) ->
-    options = Url.parse "#{OrcidController.endpoint_url}#{user.orcid}/orcid-bio"
+    options = Url.parse "#{OrcidController.endpoint_url}#{user.orcid}/person"
     options.headers =
         authorization: "Bearer #{user.orcid_access_token}"
         accept: "application/json"
@@ -94,7 +94,7 @@ module.exports = OrcidController =
     req.end()
 
     req.on 'response', (response) ->
-      logger.info 'orcid-bio', response.statusCode
+      logger.info 'orcid-v2.1-person', response.statusCode
       return (callback response.statusCode) if response.statusCode >= 400
 
       response_content = []
@@ -102,15 +102,14 @@ module.exports = OrcidController =
         response_content.push(data.toString())
       response.on 'end', () ->
         data = response_content.join()
-        logger.info 'orcid-bio data', data
-        result = JSON.parse data
+        logger.info 'orcid-v2.1-person data', data
+        person = JSON.parse data
 
-        orcid_bio = result?["orcid-profile"]?["orcid-bio"]
-        return callback() if not orcid_bio
+        return callback() if not person
 
-        first_name = orcid_bio["personal-details"]?["given-names"]?.value
-        last_name  = orcid_bio["personal-details"]?["family-name"]?.value
-        email = find_email orcid_bio["contact-details"]?["email"]
+        first_name = person["name"]?["given-names"]?.value
+        last_name  = person["name"]?["family-name"]?.value
+        email = find_email person["emails"]?["email"]
 
         update = {}
         update.first_name = first_name if first_name? and not user.first_name?
